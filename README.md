@@ -65,7 +65,9 @@ Read **[the campaign guide](docs/CAMPAIGNS.md)** for every objective, rescue thr
 
 ## How close is it to the 1992 game?
 
-Version **0.5.0** adds original sprite sheets, eight original music tracks, tile-based terrain reconstructed from the four map references, and the palace escape vehicle. Follow the occupied ATV to the airstrip, wait until your copilot disembarks, destroy the empty vehicle, breach the bomber, rescue him, and finish the aircraft. The nuclear complex now has two radar controllers and five Crotales. The final campaign has three hidden extra lives.
+**Version 0.5.1 fixes directional rendering:** the Apache now faces its shots in all directions, including mirrored westward views. Enemy turret headings, helicopter frames, vehicle mirroring, bus route-facing and a tank wreck-frame selection are corrected. Player tracers use the same visual height as the aircraft.
+
+Version **0.5.0** added original sprite sheets, eight original music tracks, tile-based terrain reconstructed from the four map references, and the palace escape vehicle. Follow the occupied ATV to the airstrip, wait until your copilot disembarks, destroy the empty vehicle, breach the bomber, rescue him, and finish the aircraft. The nuclear complex now has two radar controllers and five Crotales. The final campaign has three hidden extra lives.
 
 The simulation runs at **60 fixed updates per second** across different display frame rates. Scoring no longer rewards destroyed civilian trucks or scenery; bonus rescues and penalties appear in the completion report. Original numeric scoring and original-console movement timing remain unverified.
 

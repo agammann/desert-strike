@@ -225,7 +225,7 @@
         if(b.boarded<12){b.boarding+=dt;if(b.boarding>=1.5){b.boarding-=1.5;b.boarded++;if(b.boarded===6)reinforce(g,g.embassy.x-180,g.embassy.y+100,'chopper','bus-route');if(b.boarded===12)tell(g,'Twelve officials aboard. Clear the gate and escort the bus to the SEAL camp.');}}
         if(b.waypoint>=2&&!g.flags.busAmbush){g.flags.busAmbush=true;const t=b.path[3];reinforce(g,t.x+120,t.y-100,'m48','bus-route');reinforce(g,t.x-100,t.y+160,'m48','bus-route');tell(g,'Armor ambush ahead. Protect the bus!');}
         const block=g.enemies.some(e=>e.group==='bus-route'&&alive(e)&&dist(e,b)<210);
-        if(b.boarded===12&&!block&&dist(p,b)<340&&dist(p,b)>65){const t=b.path[b.waypoint],d=dist(b,t);if(d<5){b.waypoint++;if(b.waypoint===b.path.length){b.arrived=true;g.copilot=true;g.delivered+=12;tell(g,'All twelve embassy officials are safe. Return to the frigate.');}}else{b.x+=(t.x-b.x)/d*52*dt;b.y+=(t.y-b.y)/d*52*dt;}}
+        if(b.boarded===12&&!block&&dist(p,b)<340&&dist(p,b)>65){const t=b.path[b.waypoint],d=dist(b,t);if(d<5){b.waypoint++;if(b.waypoint===b.path.length){b.arrived=true;g.copilot=true;g.delivered+=12;tell(g,'All twelve embassy officials are safe. Return to the frigate.');}}else{b.heading=Math.atan2(t.y-b.y,t.x-b.x);b.x+=(t.x-b.x)/d*52*dt;b.y+=(t.y-b.y)/d*52*dt;}}
         if(b.hp<=0)fail(g,'The embassy bus was destroyed. All twelve officials were lost.');
       }
     }

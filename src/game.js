@@ -142,12 +142,12 @@
       if (g.targetId === e.id) { const r = e.kind !== 'tank' ? 28 : 19; ctx.strokeStyle = '#d35939'; ctx.lineWidth = 2; for (const [sx, sy] of [[-1,-1],[1,-1],[-1,1],[1,1]]) { ctx.beginPath(); ctx.moveTo(e.x + sx * (r - 10), e.y + sy * r); ctx.lineTo(e.x + sx * r, e.y + sy * r); ctx.lineTo(e.x + sx * r, e.y + sy * (r - 10)); ctx.stroke(); } }
       if (e.hp < e.maxHp) { ctx.fillStyle = '#271e19'; ctx.fillRect(e.x - 16, e.y - 33, 32, 4); ctx.fillStyle = '#f4a34e'; ctx.fillRect(e.x - 16, e.y - 33, 32 * Math.max(0, e.hp) / e.maxHp, 4); }
     }
-    for (const b of g.bullets) { ctx.strokeStyle = b.enemy ? '#ff6042' : '#fff4ae'; ctx.lineWidth = b.rocket ? 2 : 1; ctx.beginPath(); ctx.moveTo(b.x, b.y); ctx.lineTo(b.x - b.vx * .024, b.y - b.vy * .024); ctx.stroke(); }
+    const lift = -8 + (reduced ? 0 : Math.sin(g.time * 3) * 2);
+    for (const b of g.bullets) { const y=b.y+(b.enemy?0:lift);ctx.strokeStyle = b.enemy ? '#ff6042' : '#fff4ae'; ctx.lineWidth = b.rocket ? 2 : 1; ctx.beginPath(); ctx.moveTo(b.x, y); ctx.lineTo(b.x - b.vx * .024, y - b.vy * .024); ctx.stroke(); }
     for (const e of g.effects) { const a = e.life / e.maxLife; ctx.fillStyle = `rgba(255,${Math.round(100 + a * 140)},54,${a})`; ctx.beginPath(); ctx.arc(e.x, e.y, (1 - a) * (e.kind === 'explosion' ? 30 : 10) + 5, 0, Math.PI * 2); ctx.fill(); }
     ctx.save(); ctx.translate(p.x + 10, p.y + 15); ctx.rotate(p.angle + Math.PI / 2); ctx.fillStyle = '#1b291d45'; ctx.beginPath(); ctx.ellipse(0, 0, 9, 22, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-    const bob = reduced ? 0 : Math.sin(g.time * 3) * 2;
     if (g.winch > 0) { ctx.strokeStyle = '#f5df9b'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(p.x, p.y - 10); ctx.lineTo(p.x, p.y + 40); ctx.stroke(); ring(p.x, p.y, 45, '#f5c27a'); ctx.strokeStyle = '#fff3ce'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(p.x, p.y, 45, -Math.PI / 2, -Math.PI / 2 + g.winch / (g.winchDuration||1) * Math.PI * 2); ctx.stroke(); }
-    DesertArt.apache(ctx,p.x,p.y-8+bob,p.angle,reduced?0:g.time);
+    DesertArt.apache(ctx,p.x,p.y+lift,p.angle,reduced?0:g.time);
     // Direction marker keeps the next objective discoverable when it is offscreen.
     const objective = nextObjective(g);
     ctx.restore();

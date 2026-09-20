@@ -1,6 +1,6 @@
 # Genesis fidelity ledger
 
-The reference is **Desert Strike: Return to the Gulf for Genesis / Mega Drive (1992)**. This v0.5.0 recreation runs on its own JavaScript engine. It does not load a ROM or emulate the original executable. A successful campaign test does not establish identical difficulty or frame timing.
+The reference is **Desert Strike: Return to the Gulf for Genesis / Mega Drive (1992)**. This v0.5.1 recreation runs on its own JavaScript engine. It does not load a ROM or emulate the original executable. A successful campaign test does not establish identical difficulty or frame timing.
 
 ## Documented values
 
@@ -74,6 +74,10 @@ Browser rendering is decoupled from simulation: gameplay advances at 60 fixed st
 The manual (printed p. 13) describes bonus rescues beyond a mission quota and deductions for friendly/civilian destruction. Both are implemented. The numerical table remains custom: 350 per enemy target, 150 per pickup, 500 per delivery, 250 per extra rescue above its quota, and a 500-point penalty for personnel/civilian/supply losses (clamped at zero total score). Cache covers and scenery award no target score. Enemy fire destroying a supply crate does not deduct player points. A completion report itemizes target, rescue, bonus and penalty totals. This is **not the original numeric score table**.
 
 Original music accompanies the title, selected briefing, success, failure and ending screens. Flight uses synthesized rotor/weapon effects. Source credits and asset scope are in [THIRD_PARTY.md](../THIRD_PARTY.md).
+
+## Directional artwork correction in v0.5.1
+
+The source sprite sheets progress north through east to south; western views require horizontal mirroring. The Apache now follows that ordering, enemy turrets use all 24 directional frames, and eight-direction vehicles mirror correctly. The bus updates its heading along its route. Chopper frame offsets and Crotale frames are corrected, and the tank body no longer selects its wreck for the south-facing view. Player tracers share the aircraft visual elevation. These corrections align the supplied DOS art with gameplay headings; they do not establish an exact Genesis animation or ballistics match.
 
 ## Still estimated or missing
 

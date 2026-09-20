@@ -133,3 +133,28 @@ test('render rate does not change flight, fuel or weapon cadence',()=>{
 test('nuclear complex has two radar controllers and five Crotales; three hidden lives',()=>{
   const g=createGame(3);assert.equal(g.enemies.filter(e=>e.group==='nuclear-radar').length,2);assert.equal(g.enemies.filter(e=>e.weapon==='crotale'&&e.alertGroup==='nuclear-radar').length,5);assert.equal(g.supplies.filter(s=>s.kind==='life'&&s.hidden).length,3);
 });
+
+test('original sprite headings face north, east, south and west without selecting wrecks',()=>{
+  const vm=require('node:vm'),fs=require('node:fs');
+  const scope={Image:class{naturalWidth=1184;decode(){return Promise.resolve();}}};
+  vm.runInNewContext(fs.readFileSync(require.resolve('../src/original-art.js'),'utf8'),scope);
+  let draws=[],scales=[];
+  const ctx={save(){},restore(){},translate(){},scale(x,y){scales.push([x,y]);},drawImage(...args){draws.push(args.slice(1,5));}};
+  const angles=[-Math.PI/2,0,Math.PI/2,Math.PI];
+  angles.forEach((angle,i)=>{
+    draws=[];scales=[];scope.DesertArt.apache(ctx,0,0,angle,0);
+    assert.equal(draws[0][0],[17,545,1073,545][i]);assert.equal(draws[0][1],17);assert.equal(scales[0][0],i===3?-.9:.9);
+    const g=createGame(0,'standard','momentum');g.enemies=[];g.scenery=[];g.player.angle=angle;update(g,{fire:true});
+    const b=g.bullets.find(b=>!b.enemy);assert.ok(b.vx*Math.cos(angle)+b.vy*Math.sin(angle)>479);
+  });
+  for(const kind of ['bus','atv']){draws=[];scales=[];scope.DesertArt.object(ctx,{kind,x:0,y:0,heading:Math.PI},0);assert.equal(scales[0][0],-1);}
+  draws=[];scope.DesertArt.object(ctx,{weapon:'m48',x:0,y:0,heading:Math.PI/2},0);assert.equal(draws[0][0],16,'southbound tank must not select the wreck at x208');
+  draws=[];scope.DesertArt.object(ctx,{weapon:'chopper',x:0,y:0,heading:0},0);assert.equal(draws[0][0],256,'east-facing chopper is the fourth frame');
+  draws=[];scope.DesertArt.object(ctx,{weapon:'crotale',x:0,y:0,heading:0},0);assert.equal(draws[0][1],768,'Crotale uses its missile vehicle row');
+});
+
+test('escort bus faces its next waypoint while moving',()=>{
+  const g=createGame(2),b=g.bus;g.stage=7;g.tasks.slice(0,7).forEach(t=>t.done=true);g.enemies=[];
+  b.active=true;b.boarded=12;b.waypoint=0;b.path=[{x:b.x-100,y:b.y}];hover(g,{x:b.x+100,y:b.y});
+  const x=b.x;C.tick(g,1/60);assert.equal(b.heading,Math.PI);assert.ok(b.x<x);
+});

@@ -21,25 +21,28 @@
     ctx.drawImage(image,...r,-r[2]/2,-r[3]/2,r[2],r[3]);ctx.restore();
   }
   function apache(ctx,x,y,angle,time){
-    const dir=((Math.round((Math.PI/2-angle)*12/Math.PI)%24)+24)%24;
-    const col=dir<=12?dir:24-dir,row=Math.floor(time*18)%6+(dir>12?6:0);
-    frame(ctx,'apache',[16+col*88,16+row*96,88,80],x,y,.9);
+    // Sheets run north -> east -> south. The other hemisphere is mirrored;
+    // the lower six rows are another flight pose, not west-facing frames.
+    const dir=direction(angle,24),col=dir<=12?dir:24-dir,row=Math.floor(time*18)%6;
+    frame(ctx,'apache',[17+col*88,17+row*96,86,78],x,y,.9,dir>12);
   }
+  function direction(angle,count){return ((Math.round((angle+Math.PI/2)*count/(Math.PI*2))%count)+count)%count;}
   function person(ctx,x,y,time,role){
     const row=['civilian','hostage','inspector'].includes(role)?10:role==='copilot'?12:0;
     frame(ctx,'people',[16+(Math.floor(time*5)%4)*48,16+row*64,48,48],x,y,1.5);
   }
   function object(ctx,e,time){
     const kind=e.weapon||e.kind;let name='objectives',r,scale=1;
-    const dir=((Math.round((Math.PI/2-(e.heading||0))*4/Math.PI)%8)+8)%8;
+    const dir=direction(e.heading||0,8),turretDir=direction(e.heading||0,24);
     const col=dir<=4?dir:8-dir,flip=dir>4;
     if(e.weapon){
       name='enemies';
-      const vehicles={vda:[[16,80,80,80],[16,176,48,48],3],zsu:[[16,240,80,80],[16,336,80,80],3],m48:[[16,832,48,48],[272,832,48,48],3],crotale:[[512,80,48,80],[672,176,48,48],1]};
-      if(vehicles[kind]){const [body,turret,steps]=vehicles[kind];frame(ctx,name,[body[0]+col*body[2],body[1],body[2],body[3]],e.x,e.y,1,flip);frame(ctx,name,[turret[0]+col*steps*turret[2],turret[1],turret[2],turret[3]],e.x,e.y-4,1,flip);return true;}
+      const vehicles={vda:[[16,80,80,80],[16,176,48,48]],zsu:[[16,240,80,80],[16,336,80,80]],m48:[[16,832,48,48],[272,832,48,48]],crotale:[[16,768,48,48],[272,768,48,48]]};
+      const turretCol=turretDir<=12?turretDir:24-turretDir,turretFlip=turretDir>12;
+      if(vehicles[kind]){const [body,turret]=vehicles[kind],bodyCol=kind==='m48'?col%4:col;frame(ctx,name,[body[0]+bodyCol*body[2],body[1],body[2],body[3]],e.x,e.y,1,flip);frame(ctx,name,[turret[0]+turretCol*turret[2],turret[1],turret[2],turret[3]],e.x,e.y-4,1,turretFlip);return true;}
       const table={aaa:[16,16,48,48],rapier:[16,432,48,48],speedboat:[512,240,80,80],chopper:[16,896,80,80]};
       if(['ak47','aphid'].includes(kind)){person(ctx,e.x,e.y,time,'soldier');return true;}
-      r=table[kind];if(r){r=[...r];r[0]+=col*r[2]*(kind==='aaa'||kind==='rapier'?3:1);scale=kind==='chopper'?.8:1;frame(ctx,name,r,e.x,e.y,scale,flip);return true;}
+      r=table[kind];if(r){r=[...r];const turret=kind==='aaa'||kind==='rapier';r[0]+=(turret?turretCol:kind==='chopper'?col+1:col)*r[2];scale=kind==='chopper'?.8:1;frame(ctx,name,r,e.x,e.y,scale,turret?turretFlip:flip);return true;}
     }
     const table={radar:[16+(Math.floor(time*4)%7)*48,16,48,48],power:[16,128,144,128],airfield:[368,16,112,96],tower:[496,64,48,48],jet:[656,16,64,48],command:[16,272,96,80],chemical:[16,368,128,144],plant:[16,1152,176,128],palace:[544,960,176,144],bunker:[464,336,80,48],prison:[464,272,64,48],oil:[16,1056,112,96],pipe:[544,416,64,64]};
     r=table[kind];
@@ -53,7 +56,7 @@
     if(kind==='gate'){name='structures';r=[496,32,48,48];}
     if(!r)return false;
     if(['power','plant','palace','yacht','bomber','airfield','chemical','oil'].includes(kind))scale*=.65;
-    frame(ctx,name,r,e.x,e.y,scale);return true;
+    frame(ctx,name,r,e.x,e.y,scale,['bus','atv'].includes(kind)&&flip);return true;
   }
   root.DesertArt={ready,frame,apache,person,object,terrain};
 })(globalThis);

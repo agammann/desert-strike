@@ -1,10 +1,10 @@
 # Verification
 
-Version **0.5.0**, checked on **20 September 2026**. These checks establish completion and behavior of this standalone implementation. They do not establish identical difficulty, object placement or timing against the 1992 executable. The [fidelity ledger](docs/FIDELITY.md) records the remaining differences.
+Version **0.5.1**, checked on **20 September 2026**. These checks establish completion and behavior of this standalone implementation. They do not establish identical difficulty, object placement or timing against the 1992 executable. The [fidelity ledger](docs/FIDELITY.md) records the remaining differences.
 
 ## Simulation
 
-**49 tests passed** with `node --test tests/campaigns.test.cjs`, including all four campaigns in both Standard and Relaxed. The test pilot reads state and emits movement, aim, fire and winch inputs. It never teleports, replenishes resources, skips objectives, changes timers or directly destroys targets. It knows the world state, including cache contents; it is a completion test, not a model of a new player's knowledge or skill.
+**51 tests passed** with `node --test tests/campaigns.test.cjs`, including all four campaigns in both Standard and Relaxed. The test pilot reads state and emits movement, aim, fire and winch inputs. It never teleports, replenishes resources, skips objectives, changes timers or directly destroys targets. It knows the world state, including cache contents; it is a completion test, not a model of a new player's knowledge or skill.
 
 Focused regressions cover mission transitions and losses, documented weapon values, finite resources, heading-preserving strafe, collision damage, escorts, rescue quotas, copilots, hidden objects, swept projectile collision, warnings, embassy boarding and ambushes, and the breached yacht obstacle. New checks cover the palace vehicle journey, copilot transfer and bomber rescue; failure when the occupied vehicle is destroyed; civilian penalties and bonus rescues; final-campaign defenses and extra lives; and identical held-input flight, fuel and ammunition results at 30, 60 and 144 render frames per second.
 
@@ -12,7 +12,7 @@ An early automated approach to the nuclear scientist building caused friendly fi
 
 ## Browser campaigns
 
-All four campaigns completed in **Standard / From Above / X-Man** in headless Microsoft Edge using Playwright. A local observer reads game state and dispatches ordinary keyboard and pointer events. Virtual animation time accelerates the run; the game's normal update/render loop handles the input. The observer does not modify mission state or aircraft resources and is not included in release artifacts.
+In v0.5.0, all four campaigns completed in **Standard / From Above / X-Man** in headless Microsoft Edge using Playwright. A local observer reads game state and dispatches ordinary keyboard and pointer events. Virtual animation time accelerates the run; the game's normal update/render loop handles the input. The observer does not modify mission state or aircraft resources and is not included in release artifacts.
 
 | Campaign | Completed objectives | Result | Simulated flight time | Uncaught errors |
 | :--- | :---: | :--- | ---: | :---: |
@@ -22,6 +22,12 @@ All four campaigns completed in **Standard / From Above / X-Man** in headless Mi
 | Nuclear Storm | 8/8 | Operation accomplished | 859.10 s | 0 |
 
 These are automated route durations, not original-game benchmarks. The final campaign exercised the occupied escape vehicle, copilot disembarkation and boarding, empty-vehicle destruction, bomber breach, copilot rescue, aircraft destruction and return to the frigate.
+
+## Directional rendering regression in v0.5.1
+
+The reported backward-firing appearance was reproduced through ordinary mouse input. The projectile direction was correct, but the Apache sprite selected the opposite north/south view and did not mirror western views. The corrected frames were compared visually with the original supplied sprite sheet. North, northeast, east, southeast, south, southwest, west and northwest were exercised with cannon, Hydra and Hellfire fire (24 combinations); projectiles travelled along the selected heading. Both classic control modes also fired forward after turning. No uncaught errors were reported.
+
+A renderer comparison additionally checked enemy turrets, helicopters, boats, the bus and escape vehicle. Fixes cover reversed enemy headings, western vehicle mirroring, the bus heading along its route, incorrect Crotale/chopper frame selection, a tank direction selecting a wreck, and player tracer height relative to the aircraft. Two new regression tests cover frame selection/projectile consistency and bus route-facing. The 51-test suite reruns all eight campaign/difficulty simulations; the four complete browser campaign runs above remain v0.5.0 evidence.
 
 ## Interface and responsive checks
 
