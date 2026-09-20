@@ -16,12 +16,18 @@ From Above controls are available in the briefing for easier flying.
 
 Standard mode requires supply pickups for fuel and ammunition.
 Buildings cause collision damage. Disable radar/power to weaken local defenses.
-Quick winch and extra lives are hidden under destructible cache buildings.
+Quick winch, extra lives, and some fuel/ammo are hidden under cache buildings.
+Use the map Display selector to find visible supplies and mission targets.
+Select a copilot in the briefing. Rescue Valdez and deliver him to the frigate
+to unlock Jake for later operations.
 Relaxed mode also resupplies at the frigate.
 Follow the numbered mission briefing through 27 objectives in four campaigns.
 Capture intelligence to reveal targets. Watch missile and rescue countdowns.
-Clear the embassy bus route, then fly beside it to escort it to safety.
+Protect embassy officials while boarding, clear the gate, and escort the bus.
+Watch for helicopter reinforcements and the armor ambush.
 After all required missions are complete, hover at the frigate to finish.
+A completed operation saves the next campaign and rounded score in this
+browser when storage is available. Continue operation restores this checkpoint.
 No mid-campaign save: use pause or restart the campaign from its briefing.
 
 This is a newly implemented recreation, not an exact port of the original.

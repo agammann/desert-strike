@@ -13,7 +13,7 @@ No ROM, emulator, account, installation, or runtime download is needed. The offl
 1. Download **Desert-Strike-offline.zip** above.
 2. Extract the ZIP. On Windows, right-click it and choose **Extract All**.
 3. Open **Desert-Strike.html** in Chrome, Edge, or Firefox. Windows users can also double-click **Play.cmd**.
-4. Choose a campaign and control mode, then select **Launch operation**.
+4. Choose a campaign, copilot and control mode, then select **Launch operation**.
 
 You can disconnect from the internet before opening the extracted game. Artwork, sound synthesis, missions, and code are all included. There is no local server to install or run.
 
@@ -28,7 +28,7 @@ The game starts in **Standard / With Momentum**: finite supplies, documented ene
 | **Shift + A / D** | Strafe without turning in classic modes |
 | **J** or **left click** | Chain gun |
 | **K** or **Space** | Hydra rockets |
-| **L** | Hellfire missile; tracks the nearby selected target |
+| **L** | Hellfire missile; copilot can track a target ahead of the aircraft |
 | **Hover over a person or crate** | Automatic rescue or supply pickup |
 | **E** | Slow movement for precise pickup positioning |
 | **M** | Open / close the tactical map; the action pauses |
@@ -39,16 +39,18 @@ On narrow screens, use the direction pad and **Gun / Hydra / Hellfire** buttons.
 
 ## Complete a campaign
 
-Follow the **current mission** and numbered checklist beside the battlefield. The yellow map marker and edge arrow point toward the next objective. Press **M** to pause and inspect the full map.
+Follow the **current mission** and numbered checklist beside the battlefield. The yellow map marker and edge arrow point toward the next objective. Press **M** to pause and inspect the full map. Use **Display** to select a mission, personnel, fuel, ammunition, repairs, landing zones or enemy weapons. Selected locations blink; the data panel shows the mission requirement or enemy armor and damage.
 
 - Capture commanders and scientists to reveal hidden targets. Watch launch countdowns; opening a bunker or capturing a commander can trigger the next event.
 - Stop shooting when people emerge. Hover to winch them aboard. The cabin holds **six**; deliver passengers at a marked **L** landing zone or the **H** frigate.
 - Delivered personnel restore armor: 150 points each in Air Superiority, 100 in later campaigns, up to **600**. Ordinary MIAs are optional; the briefing identifies required rescues.
-- In **Standard**, collect finite fuel, ammunition and repair crates scattered across the map. The frigate has no free fuel or ammo. Fuel is conserved over water. Destroy small cache buildings to expose the quick winch and extra life.
-- Keep clear of buildings: collisions cost armor. Circle mobile defenses, use heavy weapons carefully, and disable radar/power before attacking their protected positions. Enemy classes have different armor, damage, firing intervals, movement and aim.
+- In **Standard**, collect finite fuel, ammunition and repair crates scattered across the map. The frigate has no free fuel or ammo. Fuel is conserved over water. Some fuel and ammunition are concealed under destructible buildings and only appear on the map once exposed. Hidden caches also contain the quick winch and extra life. Stray fire can destroy fuel and ammunition.
+- Keep clear of buildings: collisions take 10 armor from both the aircraft and object and briefly interrupt control. Circle mobile defenses, use heavy weapons carefully, and disable radar/power before attacking their protected positions. Enemy classes have different armor, damage, firing intervals, movement and aim.
 - Start with **1,178 gun rounds, 38 Hydras, 8 Hellfires, and three lives**. Aircraft replacement retains passengers and ammunition. Losing every aircraft or failing a critical mission ends the operation.
-- Ground missions temporarily take your copilot away, disabling automatic aiming and missile tracking. Use mouse aim or steer toward the target. For the bus, clear its route and fly beside it.
-- When every required mission is complete, **hover at the frigate** to finish. Continue to the next campaign from the results screen.
+- Ground missions temporarily take your copilot away, disabling automatic aiming and missile tracking. Use mouse aim or steer toward the target. For the bus, protect boarding officials from helicopter attacks, clear the gate, and fly beside it through the armor ambush.
+- When every required mission is complete, **hover at the frigate** to finish. Continue to the next campaign from the results screen. Score carries forward rounded down to the nearest 1,000. The next campaign and score are saved in this browser when storage is available; **Continue operation** restores that checkpoint after reopening. This does not save an unfinished mission.
+
+**Copilots:** X-Man has a fast winch, Aussie is balanced, Tracker offers stronger aim assistance, and Mr. D has weaker gunnery and a slower winch. Jake starts missing in action: find Valdez in campaign 1 or 2 and deliver him to the **frigate**, then choose Jake for your next operation. His unlock is remembered in this browser. Copilot assistance and pickup times are reconstruction settings.
 
 **Relaxed** mode reduces damage and fuel use, lengthens mission timers, and restores resources at the frigate. Every campaign is selectable from the briefing.
 
@@ -63,9 +65,9 @@ Read **[the campaign guide](docs/CAMPAIGNS.md)** for every objective, rescue thr
 
 ## How close is it to the 1992 game?
 
-Version **0.3.0** keeps the 27-mission sequence and rebuilds the campaign geography at the dimensions of the Genesis map references. The four maps now have separate coastlines, road networks, landmarks and palettes, including the final night operation. Longer travel, finite scattered supplies, building collisions, local alert zones, mobile defenses and the manual's enemy armor/damage/firing intervals make route planning and combat more demanding.
+Version **0.4.0** corrects the first campaign to require one command center and its commander, expands the agent compound to three buildings, adds copilot selection and the Valdez rescue, and restores tactical-map categories. It also adds hidden fuel/ammunition, two-sided collision damage, low-resource warnings, embassy boarding attacks and an escort ambush. The four reconstructed maps, 27 objectives, finite supplies and documented enemy weapon values remain.
 
-It is **not a verified one-to-one port**. Coastlines, roads, target positions and the escort route are manual approximations. Enemy placement, ranges, flight speed, fuel rate, alert multipliers and mission timers have not been measured against an original-console run. Artwork and audio remain newly made. Cutscenes, the palace escape vehicle, copilot selection and passwords are not reproduced; there is no mid-campaign save. See the **[fidelity ledger](docs/FIDELITY.md)** for the exact values, source links and remaining differences. Passing a playthrough establishes that a campaign is completable, not that its difficulty is identical to the original.
+It is **not a verified one-to-one port**. Coastlines, roads, target positions and the escort route are manual approximations. Enemy placement, ranges, flight speed, fuel rate, alert multipliers and mission timers have not been measured against an original-console run. Artwork and audio remain newly made. Cutscenes, the palace escape vehicle, original passwords, exact scoring and every original encounter are not reproduced. Copilot coefficients and boarding/wave timing remain estimates. Browser checkpoints replace the original password entry; there is no mid-campaign save. See the **[fidelity ledger](docs/FIDELITY.md)** for the exact values, source links and remaining differences. Passing a playthrough establishes that a campaign is completable, not that its difficulty is identical to the original.
 
 Desert Strike: Return to the Gulf is the title of Electronic Arts' original game. This is an unofficial fan recreation and is not affiliated with or endorsed by Electronic Arts. No original game files are included.
 

@@ -26,7 +26,7 @@ test('commander reveals agent; extraction requires reinforcements defeated',()=>
 test('SCUD intelligence and launch failure',()=>{const g=createGame(1);for(let i=0;i<2;i++){destroy(g,g.enemies.find(e=>e.group==='commands'&&e.release.intel===i));capture(g,g.people.find(h=>h.role==='scud commander'&&h.intel===i));}assert.equal(g.enemies.filter(e=>e.group==='scuds'&&!e.hidden).length,2);g.time=200;update(g);assert.equal(g.status,'lost');assert.match(g.message,/SCUD/);});
 test('silo cover must break before launch countdown starts',()=>{const g=createGame(2),e=g.enemies.find(e=>e.group==='silos');assert.equal(e.deadline,undefined);e.hidden=false;e.hp=0;assert.equal(C.onHit(g,e,32),true);assert.equal(e.kind,'silo');assert.ok(e.deadline>g.time);g.time=e.deadline+1;update(g);assert.equal(g.status,'lost');});
 test('yacht releases hostages gradually; six losses fail',()=>{const g=createGame(2);destroy(g,g.enemies.find(e=>e.kind==='yacht'));C.tick(g,0);assert.equal(g.people.filter(h=>h.role==='hostage').length,1);for(let i=0;i<12;i++){g.time+=5;C.tick(g,0);}assert.equal(g.people.filter(h=>h.role==='hostage').length,12);g.people.filter(h=>h.role==='hostage').slice(0,6).forEach(h=>C.killPerson(g,h));C.tick(g,0);assert.equal(g.status,'lost');});
-test('bus waits for route clearance and follows escort to safety',()=>{const g=createGame(2);g.tasks.slice(0,7).forEach(t=>t.done=true);g.stage=7;hover(g,g.embassy);update(g);assert.equal(g.bus.active,true);assert.equal(g.copilot,false);const x=g.bus.x;hover(g,{x:g.bus.x+100,y:g.bus.y-100});step(g,{},1);assert.equal(g.bus.x,x);g.enemies.filter(e=>e.group==='bus-route').forEach(e=>e.hp=0);hover(g,g.bus);step(g,{},.1);assert.equal(g.bus.x,x);for(let i=0;i<1600&&!g.bus.arrived;i++){hover(g,{x:g.bus.x+110,y:g.bus.y-80});C.tick(g,.05);}assert.equal(g.bus.arrived,true);assert.equal(g.copilot,true);assert.equal(g.delivered,12);});
+test('bus waits for route clearance and follows escort to safety',()=>{const g=createGame(2);g.tasks.slice(0,7).forEach(t=>t.done=true);g.stage=7;hover(g,g.embassy);update(g);assert.equal(g.bus.active,true);assert.equal(g.copilot,false);const x=g.bus.x;hover(g,{x:g.bus.x+100,y:g.bus.y-100});step(g,{},1);assert.equal(g.bus.x,x);g.enemies.filter(e=>e.group==='bus-route').forEach(e=>e.hp=0);hover(g,g.bus);step(g,{},.1);assert.equal(g.bus.x,x);for(let i=0;i<2000&&!g.bus.arrived;i++){g.enemies.filter(e=>e.group==='bus-route').forEach(e=>e.hp=0);hover(g,{x:g.bus.x+110,y:g.bus.y-80});C.tick(g,.05);}assert.equal(g.bus.arrived,true);assert.equal(g.copilot,true);assert.equal(g.delivered,12);});
 test('bus destruction fails',()=>{const g=createGame(2);g.bus.active=true;g.bus.hp=0;update(g);assert.equal(g.status,'lost');});
 test('six commandos required for one-use LZ; later orders hidden',()=>{const g=createGame(3);assert.equal(g.enemies.find(e=>e.group==='shelters').hidden,true);capture(g,g.people.find(h=>h.role==='commando'));C.unload(g,g.oilZone);assert.equal(g.status,'lost');const h=createGame(3);h.people.filter(p=>p.role==='commando').forEach(p=>capture(h,p));C.unload(h,h.oilZone);assert.equal(h.flags.commandos,6);assert.equal(h.player.crew,0);});
 test('civilian truck and essential personnel losses fail',()=>{const g=createGame(3);g.enemies.filter(e=>e.civilian).forEach(e=>destroy(g,e));assert.equal(g.status,'lost');const h=createGame(3);C.killPerson(h,h.people.find(p=>p.role==='commando'));assert.equal(h.status,'lost');});
@@ -36,4 +36,62 @@ for(const mode of ['standard','story'])for(let level=0;level<4;level++)test(`ful
   for(let n=0;n<150000&&g.status==='playing';n++)update(g,pilot(g,objective),1/60);
   assert.equal(g.status,'won',JSON.stringify({status:g.status,stage:g.stage,time:g.time,message:g.message,armor:g.player.armor,fuel:g.player.fuel,ammo:g.player.ammo,rockets:g.player.rockets,hellfires:g.player.hellfires,crew:g.player.crew,target:objective(g),remaining:g.tasks.filter(t=>!t.done).map(t=>t.title)}));
   assert.ok(g.tasks.every(t=>t.done));
+});
+
+test('one command center and one commander satisfy the objective; three agent buildings',()=>{
+  const g=createGame();assert.equal(g.enemies.filter(e=>e.group==='agent').length,3);
+  destroy(g,g.enemies.find(e=>e.group==='commands'));capture(g,g.people.find(p=>p.role==='commander'));
+  assert.equal(g.tasks[3].test(),true);assert.equal(g.enemies.filter(e=>e.group==='commands'&&e.hp>0).length,1);
+  destroy(g,g.enemies.find(e=>e.group==='agent'&&!e.trapdoor));assert.equal(g.flags.trapdoorOpen,undefined);
+});
+test('collision damages both participants and interrupts steering',()=>{
+  const g=createGame(0,'standard','momentum'),b=g.enemies.find(e=>e.kind==='radar');g.enemies=[b];const hp=b.hp;
+  hover(g,b);update(g);assert.equal(b.hp,hp-10);assert.equal(g.player.armor,590);
+  const angle=g.player.angle;step(g,{right:true,up:true},.2);assert.equal(g.player.angle,angle);assert.ok(g.stunned>0);
+});
+test('winch progress does not transfer to a different person',()=>{
+  const g=createGame();g.enemies=[];g.people=g.people.slice(0,2);Object.assign(g.people[0],{x:4000,y:1000});Object.assign(g.people[1],{x:4100,y:1000});
+  hover(g,g.people[0]);step(g,{},1.3);hover(g,g.people[1]);step(g,{},.5);assert.equal(g.player.crew,0);step(g,{},1.2);assert.equal(g.player.crew,1);
+});
+test('Valdez must reach the frigate before Jake becomes available',()=>{
+  const g=createGame(),p=g.people.find(p=>p.role==='Valdez');assert.ok(p);capture(g,p);C.unload(g,g.zones[0]);assert.equal(g.jakeUnlocked,false);assert.equal(g.player.crew,1);
+  C.unload(g,g.base);assert.equal(g.jakeUnlocked,true);assert.equal(g.player.crew,0);
+  assert.equal(createGame(0,'standard','above',{copilotId:'jake'}).copilotId,'xman');
+  const next=createGame(1,'standard','above',{copilotId:'jake',jakeUnlocked:true,score:12000});assert.equal(next.copilotId,'jake');assert.equal(next.score,12000);assert.ok(!next.people.some(p=>p.role==='Valdez'));
+});
+test('copilot selection changes rescue speed',()=>{
+  for(const [id,expected]of [['xman',1],['mrd',0]]){const g=createGame(0,'standard','above',{copilotId:id});g.enemies=[];g.people=g.people.slice(0,1);hover(g,g.people[0]);step(g,{},2);assert.equal(g.player.crew,expected);}
+});
+test('classic copilot assists a forward shot but cannot lock behind the aircraft',()=>{
+  const g=createGame(0,'standard','momentum',{copilotId:'tracker'}),e=g.enemies.find(e=>e.kind==='radar');g.enemies=[e];g.scenery=[];g.player.angle=0;
+  Object.assign(e,{x:g.player.x+120,y:g.player.y+20});update(g,{fire:true});assert.ok(g.bullets[0].vy>0);
+  e.x=g.player.x-120;g.bullets=[];update(g,{hellfire:true});assert.equal(g.bullets[0].homing,null);assert.ok(g.bullets[0].vx>0);
+});
+test('map hides concealed supplies and future nuclear-storm orders',()=>{
+  const g=createGame(),s=g.supplies.find(s=>s.kind==='fuel'&&s.hidden);assert.ok(!C.mapObjects(g,'fuel').includes(s));
+  destroy(g,g.enemies.find(e=>e.supplyId===s.id));assert.ok(C.mapObjects(g,'fuel').includes(s));
+  const n=createGame(3);assert.equal(C.mapObjects(n,'mission:1').length,0);assert.ok(n.enemies.filter(e=>e.group==='pipes').every(e=>e.hidden));
+});
+test('swept shots hit small supplies between frames and respect nearer personnel',()=>{
+  const g=createGame();g.enemies=[];g.scenery=[];g.people=[];g.supplies=[{x:3000,y:1000,kind:'fuel',used:false}];
+  g.bullets=[{x:2980,y:1000,vx:1000,vy:0,life:1,damage:100,enemy:false}];update(g,{},.05);assert.equal(g.supplies[0].destroyed,true);
+  const h={x:2980,y:1100,role:'MIA',rescued:false,dead:false};g.people=[h];const e={x:3010,y:1100,hp:100,kind:'radar',id:0};g.enemies=[e];
+  g.bullets=[{x:2960,y:1100,vx:1000,vy:0,life:1,damage:100,enemy:false}];update(g,{},.05);assert.equal(h.dead,true);assert.equal(e.hp,100);
+});
+test('fuel warns at fourteen and each two-unit loss; armor warns at 125',()=>{
+  const g=createGame();g.player.fuel=14;update(g);assert.match(g.message,/Low fuel/);g.message='quiet';g.player.fuel=13;update(g);assert.equal(g.message,'quiet');g.player.fuel=12;update(g);assert.match(g.message,/Low fuel/);
+  g.player.armor=125;update(g);assert.match(g.message,/Armor critical/);
+});
+test('embassy boarding holds the bus and creates two air attacks plus a route ambush',()=>{
+  const g=createGame(2);g.stage=7;g.tasks.slice(0,7).forEach(t=>t.done=true);hover(g,g.embassy);C.tick(g,.05);const start=g.bus.x;
+  assert.equal(g.bus.active,true);assert.equal(g.bus.boarded,0);assert.equal(g.enemies.filter(e=>e.group==='bus-route'&&e.weapon==='chopper').length,1);
+  for(let i=0;i<361;i++)C.tick(g,.05);assert.equal(g.bus.boarded,12);assert.equal(g.bus.x,start);assert.equal(g.enemies.filter(e=>e.group==='bus-route'&&e.weapon==='chopper').length,2);
+  g.bus.waypoint=2;C.tick(g,.05);assert.equal(g.flags.busAmbush,true);
+});
+test('AAA does not inherit radar damage or range bonuses',()=>{
+  const g=createGame(),e=g.enemies.find(e=>e.weapon==='aaa'),r=g.enemies.find(e=>e.kind==='radar');g.enemies=[e,r];e.alertGroup='radars';e.heading=0;e.cooldown=0;
+  hover(g,{x:e.x+200,y:e.y});update(g);assert.equal(g.bullets.length,0);hover(g,{x:e.x+120,y:e.y});update(g);assert.equal(g.bullets[0].damage,20);assert.equal(e.cooldown,.5);
+});
+test('breached yacht still collides and does not release a second hostage stream',()=>{
+  const g=createGame(2),y=g.enemies.find(e=>e.kind==='yacht');destroy(g,y);hover(g,y);update(g);assert.equal(g.player.armor,590);assert.equal(g.flags.hostages,1);assert.equal(g.flags.yachtOpen,true);
 });

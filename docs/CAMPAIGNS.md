@@ -1,6 +1,6 @@
 # Campaign guide and fidelity notes
 
-Version 0.3 implements **27 mission objectives in the original four-campaign structure**. The mission roles, intelligence dependencies, rescues, and major set pieces follow the 1992 game. It adds four maps at the Genesis reference dimensions and documented enemy weapon values. Placements, physics and balance remain a reconstruction; this is not a verified one-to-one port.
+Version 0.4 implements **27 mission objectives in the original four-campaign structure**. The mission roles, intelligence dependencies, rescues, and major set pieces follow the 1992 game. It adds four maps at the Genesis reference dimensions and documented enemy weapon values. Placements, physics and balance remain a reconstruction; this is not a verified one-to-one port.
 
 The numbered mission list recommends the original order. In campaigns 1–3, visible objectives can be tackled early; intelligence still gates hidden targets. Nuclear Storm reveals later assignments as earlier ones finish. After completing a campaign's objectives, hover at the frigate to finish.
 
@@ -11,10 +11,10 @@ The numbered mission list recommends the original order. In campaigns 1–3, vis
 | 1. Radar sites | Destroy both radar installations. Active radar extends the range of linked local defenses. |
 | 2. Power station | Cut power to weaken linked defenses' aiming, fire rate and protection. Recover the repair crate. |
 | 3. Airfields | Destroy the hangar, tower and two aircraft at each of two fields. |
-| 4. Command centers | Destroy both centers and capture at least one commander. His intelligence reveals the bunker. |
-| 5. Secret agent | Breach the bunker, hover at LAND, and fight the three reinforcements while the copilot is inside. Winch the agent and copilot, deliver the agent, then return to the frigate. |
+| 4. Command centers | Destroy one command center and capture its commander. The second center is optional. Intelligence reveals the three-building agent compound. |
+| 5. Secret agent | Find the building covering the trapdoor, hover at LAND, and fight the three reinforcements while the copilot is inside. Winch the agent and copilot, deliver the agent, then return to the frigate. |
 
-Ordinary MIAs provide score and armor when delivered; they are not all mandatory campaign objectives. Losing both commanders, the agent, or the copilot fails the campaign.
+The first campaign includes 20 optional MIAs. Ordinary MIAs provide score and armor when delivered; they are not all mandatory campaign objectives. Losing both commanders, the agent, or the copilot fails the campaign.
 
 ## Scud Buster — 6 missions
 
@@ -40,7 +40,7 @@ Do one intelligence-and-launcher pair at a time. Capturing several commanders st
 | 5. Power station | Disable the station. |
 | 6. Madman's yacht | Breach the yacht. Twelve hostages enter the water gradually. Deliver at least seven and lose no more than five. |
 | 7. Enemy ambassador | Destroy all four command buildings and capture the ambassador. |
-| 8. Embassy rescue | Hover at the embassy. The copilot drives twelve officials onto the bus. Clear its gate and route; escort it to the SEAL camp. |
+| 8. Embassy rescue | Hover at the embassy. Cover twelve officials as they board. Repel two helicopter attacks, clear the gate and route, then escort the bus through the M48 ambush to the SEAL camp. |
 
 The bus moves when the helicopter is within 340 world units but more than 65 units away. Fly beside it. Route defenses stop it; hostile or friendly fire can destroy it. Auto-aim and Hellfire tracking are unavailable while the copilot is driving. He returns after the bus reaches safety.
 
@@ -63,16 +63,18 @@ Oil storage takes damage while enemy tanks survive, and from stray fire. Losing 
 
 **Implemented:** the mission sequence above; distinct rescue roles; intelligence reveals; timed launches and drowning; six-passenger capacity; landing-zone delivery and armor recovery; three lives; three weapon inventories; fuel conservation over water; radar/power effects; quick winch; extra-life pickups; ground copilot missions; bus escort; oil protection; civilian truck identification; and bomber interception.
 
-**Added in v0.3.0:** four separate maps at the reference image dimensions, reconstructed roads/coasts/landmarks, a longer embassy escort route, finite scattered supplies, hidden cache pickups, building collisions, strafing, local alert zones, distinct ground/air/boat behaviors, and enemy armor/damage/firing intervals from the Genesis manual. Standard / With Momentum is now the default.
+**Map and combat foundation:** four separate maps at the reference image dimensions, reconstructed roads/coasts/landmarks, a longer embassy escort route, finite scattered supplies, hidden cache pickups, building collisions, strafing, local alert zones, distinct ground/air/boat behaviors, and enemy armor/damage/firing intervals from the Genesis manual. Standard / With Momentum is now the default.
 
-**Reconstructed rather than exact:** road/coast vertices, building and defense placement, scenery density, speed, aiming, enemy AI, scoring, weapon ranges, fuel rate, alert multipliers, escort waypoints, and timer durations. Ground infiltration is represented by gameplay events rather than original cutscenes. The original palace escape vehicle is condensed into the bomber reveal. Copilot selection, passwords, original music, and mid-campaign saving are absent. The **[fidelity ledger](FIDELITY.md)** separates documented values from estimates and lists the map references.
+**Reconstructed rather than exact:** road/coast vertices, building and defense placement, scenery density, speed, aiming, enemy AI, scoring, weapon ranges, fuel rate, alert multipliers, escort waypoints, and timer durations. Ground infiltration is represented by gameplay events rather than original cutscenes. The original palace escape vehicle is condensed into the bomber reveal. Original passwords, music and mid-campaign saving are absent. Copilot selection, the Valdez unlock and a browser checkpoint between campaigns are implemented. Copilot assistance values and boarding/ambush timings are estimates. The **[fidelity ledger](FIDELITY.md)** separates documented values from estimates and lists the map references.
 
 **Timer settings in this version:** SCUDs 100 seconds Standard / 160 Relaxed after capture; silos 30 / 55 after exposure; hostages 100 / 150 after entering the water; bomber 150 / 240 after the palace trap. These are tested recreation settings, not measured original timings. Relaxed mode additionally reduces damage and fuel use and restores supplies at the frigate.
+
+**Corrected in v0.4.0:** one command center is sufficient; the spy compound has three buildings; only the first Nuclear Storm assignment appears initially; collisions inflict 10 damage on both objects and interrupt steering; fuel warnings repeat every two units below 14 and armor warns at 125. Tactical-map categories, hidden fuel/ammunition, copilot choice/Valdez rescue, and embassy boarding/ambush events are added.
 
 ## Reference basis
 
 - [Electronic Arts' Genesis manual, hosted by Sega](https://www.sega.jp/genesismini2/assets/manual/pdf/US_Desert-Strike.pdf): primary basis for campaign order, rescue and intelligence rules, original aircraft resources, and the first two Nuclear Storm assignments. The manual intentionally leaves later final-campaign assignments undisclosed.
-- [Matt Keller's Genesis playthrough guide](https://gamefaqs.gamespot.com/sms/570266-desert-strike/faqs/20312): the page is filed under another platform, but the guide itself explicitly identifies Sega Mega Drive. Used to cross-check the first campaign's airfield and agent sequence.
+- [Matt Keller's Genesis playthrough guide](https://gamefaqs.gamespot.com/genesis/366850-desert-strike-return-to-the-gulf/faqs/20312): the guide identifies Sega Mega Drive. Used to cross-check the first campaign's airfield and agent sequence.
 - [Cosmão's illustrated Mega Drive playthrough](https://shugames.blogspot.com/2015/10/guia-completo-desert-strike-mega-drive.html): firsthand playthrough covering later campaigns and the palace/bomber ending. Where guide prose conflicts with the original manual, the manual takes priority. Thresholds and layout details that have not been independently measured against original hardware remain reconstruction choices.
 
 No ROM, emulator, original executable, extracted game assets, or third-party game engine is included.

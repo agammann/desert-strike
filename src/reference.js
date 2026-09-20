@@ -1,5 +1,13 @@
 (function(root){
   'use strict';
+  // Roles follow the original roster. Numeric assistance and winch durations are estimates.
+  const copilots={
+    xman:{name:'Xavier Thomas',call:'X-Man',hint:'Fast winch; limited aim assistance.',winch:1.6,aim:.12},
+    aussie:{name:'Kris Timmarie',call:'Aussie',hint:'Balanced gunnery and rescue speed.',winch:2.2,aim:.24},
+    tracker:{name:'Keith Michaels',call:'Tracker',hint:'Strong aim assistance; slower winch.',winch:2.8,aim:.38},
+    mrd:{name:'Dave Arrick',call:'Mr. D',hint:'Limited aim assistance and slow winch.',winch:3.2,aim:.08},
+    jake:{name:'Carlos Valdez',call:'Jake',hint:'Expert gunner and winch operator. Rescue him and deliver him to the frigate.',winch:1.4,aim:.42},
+  };
   // Armor, damage and cadence: EA Genesis manual, Weapons Appendix.
   // Range, travel speed, turret speed and alert multipliers are reconstruction estimates.
   const weapons={
@@ -22,7 +30,7 @@
       roads:[[[1160,580],[1800,260],[2280,500],[2820,260],[3330,500],[3860,260],[5390,1020],[6144,610]],[[1160,580],[1450,710],[1300,790],[1800,1030],[1670,1100],[2300,1420],[3090,1010],[4370,1650]],[[6144,610],[2690,2100],[2970,2240],[2760,2350],[3340,2640],[4030,2300],[4770,2650],[6144,1970]],[[2200,1600],[2490,1740],[2240,1870],[2670,2110]],[[3210,2630],[3590,2830],[3380,2940],[3860,3072]],[[3090,1010],[4350,1370],[4650,1510]]],
       zones:[[1720,950],[2840,2000],[4440,2670]],
       sites:{radars:[[1792,680],[2800,1720]],power:[[4320,700]],airfields:[[3320,736],[4920,2280]],commands:[[3840,1680],[3840,1920]],agent:[[5480,660]]},
-      fuel:[[1280,600],[2380,1320],[3230,1200],[4110,1320],[5360,1430],[4890,2780]],ammo:[[1710,1100],[3720,1150],[4160,2420],[5640,2130]],repair:[[4320,780]],winch:[3560,980],life:[5620,150],
+      fuel:[[1280,600],[2380,1320],[3230,1200],[4110,1320],[5360,1430],[4890,2780]],ammo:[[1710,1100],[3720,1150],[4160,2420],[5640,2130]],repair:[],winch:[3560,980],life:[5620,150],
     },
     {width:6144,height:3584,base:[480,2670],color:'#9e8054',water:'#165f73',
       coast:[[0,400],[200,550],[440,950],[850,1230],[1110,1540],[1290,1950],[1770,2420],[2170,2610],[2510,3000],[2850,3190],[3140,3584]],
@@ -60,6 +68,7 @@
         const [x,y]=positions[Math.min(cluster,positions.length-1)];e.x=x;e.y=y;
         if(group==='airfields'){const offsets=[[0,0],[130,65],[-100,85],[-15,125]];e.x+=offsets[i%4][0];e.y+=offsets[i%4][1];}
         if(group==='chemical'||group==='pow'){e.x+=(i%2)*150;e.y+=Math.floor(i/2)*120;}
+        if(group==='agent'){e.x+=(i%2)*150;e.y+=Math.floor(i/2)*120;}
       });
     }
     if(g.level===0){g.agentZone.x=5480;g.agentZone.y=745;}
@@ -79,17 +88,18 @@
       Object.assign(g.palaceZone,{x:3330,y:1320});
     }
     // Replace the repeated full-service bundles with finite, scattered resources.
-    g.supplies=[];for(const kind of ['fuel','ammo','repair'])for(const [x,y]of m[kind])g.supplies.push({x,y,kind,used:false});
+    g.supplies=[];for(const kind of ['fuel','ammo','repair'])m[kind].forEach(([x,y],i)=>g.supplies.push({x,y,kind,used:false,hidden:kind!=='repair'&&i%3===1}));
     g.supplies.push({x:m.winch[0],y:m.winch[1],kind:'winch',used:false,hidden:true});
     g.supplies.push({x:m.life[0],y:m.life[1],kind:'life',used:false,hidden:true});
     // Optional MIAs supply armor through rescue, not through free repairs at every site.
     g.people=g.people.filter(p=>p.role!=='MIA');
-    const miaCount=g.level===0?15:8;
+    const miaCount=g.level===0?20:8;
     for(let i=0;i<miaCount;i++){const z=g.zones[i%g.zones.length];g.people.push({id:g.people.length,x:z.x+180+(i%3)*18,y:z.y+140+Math.floor(i/3)*25,role:'MIA',rescued:false,dead:false,delivered:false});}
     // Building resistance is calibrated separately from the documented weapon table.
     for(const e of g.enemies)if(e.kind!=='tank'){
       const hp={radar:200,power:450,airfield:195,tower:135,jet:24,command:300,prison:240,chemical:300,bunker:240,plant:500,palace:1000,bomber:3000,yacht:600,scud:200,dune:36,pipe:24,gate:80,truck:150}[e.kind]||e.hp;
-      e.hp=e.maxHp=hp;e.collisionRadius=['jet','scud','truck','pipe','dune','bomber','yacht','gate'].includes(e.kind)?0:20;
+      e.hp=e.maxHp=hp;e.collisionRadius=e.kind==='yacht'?30:['jet','scud','truck','pipe','dune','bomber','gate'].includes(e.kind)?0:20;
+      if(e.kind==='yacht')e.solidWreck=true;
     }
     const guards=g.enemies.filter(e=>e.kind==='tank');
     // Relocate old generic guards and give each its campaign-appropriate weapon.
@@ -111,9 +121,10 @@
     }
     if(g.level===2){for(const p of g.people.filter(h=>h.role==='pilot'))add(p,'speedboat',100,-60);const y=g.enemies.find(e=>e.kind==='yacht');add(y,'speedboat',120,-100,'power');add(y,'chopper',-100,-100,'power');}
     if(g.level===3){for(const site of g.enemies.filter(e=>['nuclear','palace','power','shelters'].includes(e.group))){add(site,site.group==='shelters'?'m48':'crotale',-110,75,site.group==='palace'?'power':null);g.enemies.at(-1).hidden=site.hidden;g.enemies.at(-1).revealWith=site.group;}}
-    for(const s of g.supplies.filter(s=>s.hidden))g.enemies.push({id:g.enemies.length,x:s.x,y:s.y,kind:'cache',group:'optional-cache',cache:s.kind,hp:45,maxHp:45,collisionRadius:16});
+    g.supplies.forEach((s,i)=>{s.id=i;if(s.hidden)g.enemies.push({id:g.enemies.length,x:s.x,y:s.y,kind:'cache',group:'optional-cache',cache:s.kind,supplyId:i,hp:45,maxHp:45,collisionRadius:16});});
+    if(g.level<2&&!g.jakeUnlocked)g.people.push({x:m.life[0]+70,y:m.life[1]+70,role:'Valdez',rescued:false,dead:false,delivered:false});
     g.people.forEach((p,i)=>p.id=i);
-    g.scenery=m.roads.flatMap((road,i)=>i%2?[]:road.slice(1,-1).filter((_,j)=>j%3===0).map(([x,y])=>({x:x+55,y:y-45,radius:18})));
+    g.scenery=m.roads.flatMap((road,i)=>i%2?[]:road.slice(1,-1).filter((_,j)=>j%3===0).map(([x,y])=>({x:x+55,y:y-45,radius:18,hp:60,maxHp:60})));
   }
-  const api={weapons,maps,water,coastAt,apply,configureEnemy};if(typeof module!=='undefined'&&module.exports)module.exports=api;root.DesertReference=api;
+  const api={weapons,copilots,maps,water,coastAt,apply,configureEnemy};if(typeof module!=='undefined'&&module.exports)module.exports=api;root.DesertReference=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

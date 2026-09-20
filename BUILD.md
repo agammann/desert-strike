@@ -21,7 +21,7 @@ Open `http://127.0.0.1:4173`. The server binds only to loopback. Press Ctrl+C to
 
 | File | Responsibility |
 | :--- | :--- |
-| `src/reference.js` | Weapon table, map geometry, landmark placements, defenses and supply distribution |
+| `src/reference.js` | Copilot profiles, weapon table, map geometry, landmark placements, defenses and supply distribution |
 | `src/campaigns.js` | Mission definitions, intelligence, scripted events, escorts, timers and campaign success/failure |
 | `src/simulation.js` | Flight physics, combat, winch, supplies, damage and lives |
 | `src/game.js` | Canvas rendering, input, audio synthesis, HUD, map, pause and menus |

@@ -1,45 +1,51 @@
 # Verification
 
-Version **0.3.0**, checked on **20 September 2026**, reconstructs 27 objectives across four campaigns with expanded maps and documented enemy weapon values. Gameplay completion and original-game fidelity are separate claims: the checks below establish that this implementation works; the [fidelity ledger](docs/FIDELITY.md) records its reference basis and remaining differences.
+Version **0.4.0**, checked on **20 September 2026**. These checks establish completion and behavior of this standalone implementation. They do not establish identical difficulty, map placement or frame timing against the 1992 executable. The [fidelity ledger](docs/FIDELITY.md) records the remaining differences.
 
-## Automated simulation
+## Simulation
 
-**32 tests passed**, including eight complete control-driven playthroughs: every campaign in both Standard and Relaxed. The full-playthrough pilot reads game state and emits ordinary movement, aim, fire and winch inputs. It does not teleport, replenish resources, skip objectives, change timers, or directly destroy targets.
+**44 tests passed**, including all four campaigns in both Standard and Relaxed. The test pilot reads state and emits movement, aim, fire and winch inputs. It never teleports, replenishes resources, skips objectives, changes timers or directly destroys targets. It knows the world state, including cache contents; it is a completion test, not a model of a new player's knowledge or skill.
 
-Focused tests separately set up fixtures for mission transitions and failure cases: commander intelligence, SCUD launches, silo exposure, drowning, bus clearance/proximity/delivery/destruction, one-use commando landing, civilian trucks, the palace trap, bomber takeoff, copilot recovery, fuel over water, life replacement, supply limits, winch capacity and landing-zone repair. Fixture tests are not presented as complete playthroughs.
+Focused fixtures cover mission transitions and losses, documented weapon values, geography dimensions, finite resources, all three weapons, heading-preserving strafe, one-use commando delivery, escort behavior, timers and the bomber ending. New regressions cover one-center completion, three agent buildings, collision damage to both participants, interrupted steering, winch target changes, Valdez delivery/unlock, copilot differences, forward-only assisted aiming, hidden map objects, swept projectile collision, warnings, embassy boarding/ambushes, AAA radar immunity and the breached yacht obstacle.
 
-New checks cover the manual's ten enemy armor/damage/cadence profiles, all four reference map dimensions, building collision damage, heading-preserving strafing, hidden cache exposure, radar range bonuses and power-assisted turret tracking. Separate complete simulation runs also finished all four Standard campaigns at a 50 ms update interval.
+Separate complete Standard simulation runs at **50 ms per update** also finished all four campaigns. An initial ambassador approach caused friendly fire; the pilot now approaches that building from the side opposite its exit. Damage rules were retained.
 
-## Browser gameplay
+The managed local environment blocks the child process used by `node --test` (`spawn EPERM`). The same test file ran successfully in-process with:
 
-All four campaigns completed in **Standard / From Above** in Microsoft Edge through automated keyboard and pointer events. A read-only state observer guided those inputs; an accelerated browser clock advanced ordinary animation frames. No mission state or aircraft resources were changed by the browser pilot.
+```sh
+node tests/campaigns.test.cjs
+node scripts/build.mjs
+```
 
-| Campaign | Completed objectives | Final result | Uncaught page errors |
+GitHub Actions uses the ordinary `node --test tests/campaigns.test.cjs` command. Its result on the published commit is independent CI evidence.
+
+## Browser campaigns
+
+All four campaigns completed in **Standard / From Above / X-Man** in the in-app browser, using an isolated local QA page. The fixture loads the application source, observes the game, and dispatches ordinary keyboard and pointer events. It accelerates animation timestamps; the game's normal update/render loop handles every frame. It does not modify mission state or aircraft resources. The fixture and observer are not included in the game or release artifacts.
+
+| Campaign | Completed objectives | Result | Uncaught errors |
 | :--- | :---: | :--- | :---: |
 | Air Superiority | 5/5 | Operation accomplished | 0 |
 | Scud Buster | 6/6 | Operation accomplished | 0 |
 | Embassy City | 8/8 | Operation accomplished | 0 |
 | Nuclear Storm | 8/8 | Operation accomplished | 0 |
 
-Scud Buster and Embassy City were repeated after correcting their local power links. Both completed again with no uncaught page errors, using keyboard/pointer input with animation frames spaced approximately 48 ms apart. These runs also exercised the larger maps at a lower frame rate. No game state was advanced directly by either browser pilot.
+The first Embassy City attempt lost the ambassador to friendly fire. The completed rerun uses the safer approach described above. Neither the failed attempt nor simulation runs are substituted for a successful browser completion.
 
-The in-app browser also launched the updated game and displayed the mission list. The longer repeatable control sequences used a separate Edge session because the in-app automation API does not provide sustained key-down/key-up controls.
+After Air Superiority, reloading showed **Continue operation 2 · 15,000 pts**, restored the rounded score, and launched Scud Buster. Next-operation transitions and the final completion screen were exercised.
 
-Additional browser checks passed: launch, movement, all three weapons, map pausing time, pause/resume, sound toggle, focus-loss pause, restart, objective counters, touch-control pointer input, and no horizontal overflow at 1536 × 1024 and 390 × 844. Desktop and narrow-screen screenshots were visually inspected.
+## Interface and responsive checks
 
-The default **Standard / With Momentum** selection, turn, forward thrust and Shift-strafe were checked through browser keyboard events. Strafing moved the aircraft sideways while preserving its heading. The tactical map now draws immediately when opened; this was checked visually in the in-app browser with no console warnings or errors.
+The ordinary local game was also checked separately from the automated fixture: launch, copilot selection, Hydra/Hellfire consumption, tactical-map opening, paused time, resource filtering and visible mission guidance. Desktop screenshots were inspected at the browser's 1280 × 720 viewport. No uncaught errors were reported.
 
-## Offline and build
+A **390 × 844 iframe viewport** exercised the narrow-screen CSS. The briefing, copilot selector and launch button were visible, the final campaign showed one initial order plus seven concealed orders, and document width equaled scroll width (375 px excluding the scrollbar). No console errors or warnings were reported. The browser's viewport override did not change its actual dimensions, so it was reset; this iframe check is explicitly a layout test. The browser tool could not click controls inside the frame, so a fresh mobile interaction pass is not claimed. Physical phones are untested.
 
-The dependency-free builder produced both `dist/index.html` and `dist/Desert-Strike.html`, approximately **1.4 MB** each. The standalone artifact opened through `file://`, launched and flew with **zero HTTP or HTTPS requests**. The sprite atlas, reconstructed map data, scripts, styles, and synthesized sound are embedded. The unused legacy terrain image is no longer part of the build.
+## Offline build
 
-```sh
-node --test tests/campaigns.test.cjs
-node scripts/build.mjs
-```
+The dependency-free builder creates identical `dist/index.html` and `dist/Desert-Strike.html` files of approximately **1.4 MiB**. The sprite atlas, map data, scripts, styles and synthesized sound are embedded. Packaging validates that the ZIP contains the HTML, launcher, instructions and license, and that no QA harness is included.
 
-GitHub Actions reruns these commands for each revision. The workflow result on the exact published commit is the current CI evidence.
+The v0.3.0 standalone artifact previously launched through `file://` with zero HTTP/HTTPS requests. This turn's browser URL policy blocked a new direct-file launch, and separate Edge startup was blocked by `spawn EPERM`. That earlier offline run is not presented as a fresh v0.4.0 file-launch test. Current source gameplay, embedded build output and archive integrity are checked separately.
 
 ## Limits
 
-Automated completion is not a human difficulty assessment. Full playthroughs were tested with From Above controls; classic turn-and-thrust movement has a focused check, not a complete campaign run. Physical phones, gamepads, and every browser were not tested. Audio controls were exercised, but sound was not independently assessed by listening. The recreation was not compared frame by frame against an original console playthrough; timings, layouts, enemies and other differences are listed in the campaign guide.
+Automated completion is not a human assessment of original difficulty. Full playthroughs use From Above controls; classic controls have focused movement/aim checks, not a full campaign run. Copilot profiles other than X-Man have focused checks, not a full campaign matrix. Original-console footage could not be played in this environment, so no frame-by-frame video comparison is claimed. Music, exact artwork/animations, original passwords and scoring, and the palace escape vehicle remain unmatched. Audio synthesis was not independently assessed by listening.

@@ -22,12 +22,14 @@
           <h2 id="overlay-title">Bring everyone<br>home.</h2>
           <p id="overlay-copy">Follow the briefing through 27 missions: capture intelligence, protect rescues, manage supplies, and return to the frigate.</p>
           <div id="setup"><label>Operation<select id="mission"><option value="0">01 — Air Superiority</option><option value="1">02 — Scud Buster</option><option value="2">03 — Embassy City</option><option value="3">04 — Nuclear Storm</option></select></label><label>Flight mode<select id="difficulty"><option value="standard" selected>Standard — original weapon values</option><option value="story">Relaxed — less damage, more fuel</option></select></label><label>Controls<select id="controls"><option value="momentum" selected>With Momentum — turn and thrust</option><option value="cockpit">From Cockpit — direct throttle</option><option value="above">From Above — compass movement + mouse aim</option></select></label></div>
+          <div id="copilot-setup"><label>Copilot<select id="copilot"><option value="xman">X-Man — fast winch</option><option value="aussie">Aussie — balanced</option><option value="tracker">Tracker — strong gunnery</option><option value="mrd">Mr. D — challenging</option><option value="jake" disabled>Jake — missing in action</option></select></label><p id="copilot-hint">Rescue Valdez and deliver him to the frigate to unlock Jake.</p></div>
           <button id="launch" class="primary" disabled>Loading flight deck…</button>
+          <button id="continue" class="secondary" hidden>Continue campaign</button>
           <button id="retry" class="secondary" hidden>Restart operation</button>
           <p class="briefing-tip" id="briefing-tip">WASD fly · J gun · K Hydra · L Hellfire<br>Hover to pick up crew and supplies. Deliver at L landing zones or the ship.</p>
         </div>
       </div>
-      <div id="big-map" hidden><h2>Tactical map</h2><canvas id="map-large" width="600" height="600" aria-label="Full tactical map"></canvas><p>H Frigate · L Landing zone · Orange personnel · Red targets · Green supplies</p><button id="close-map">Close map · M</button></div>
+      <div id="big-map" role="dialog" aria-label="Tactical map" hidden><h2>Tactical map</h2><label class="map-filter">Display<select id="map-category"><option value="all">All known locations</option></select></label><canvas id="map-large" width="600" height="600" aria-label="Full tactical map"></canvas><p id="map-intel" aria-live="polite"></p><p>H Frigate · L Landing zone · Orange personnel · Red targets · Green supplies</p><button id="close-map">Close map · M</button></div>
       <div class="touch-controls" aria-label="Touch flight controls"><div class="dpad"><button data-hold="up" aria-label="Fly north">↑</button><button data-hold="left" aria-label="Fly west">←</button><button data-hold="down" aria-label="Fly south">↓</button><button data-hold="right" aria-label="Fly east">→</button></div><div class="actions"><button data-hold="fire">Gun</button><button data-hold="rocket">Hydra</button><button data-hold="hellfire">Hellfire</button></div></div>
     </section>
     <aside>

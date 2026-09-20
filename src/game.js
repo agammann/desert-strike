@@ -10,6 +10,11 @@
   let g = createGame(), mode = 'briefing', ready = false, mapOpen = false, keys = {}, held = {}, mouse = null, firing = false;
   let w = 1000, h = 700, zoom = .8, camera = { x: 0, y: 0 }, last = performance.now(), sound = false, audio, rotor, rotorGain, hudTime = 0;
   let best = 0; try { best = Number(localStorage.getItem('desert-strike-best')) || 0; } catch {}
+  let jakeUnlocked=false,checkpoint=null,persistedJake=false;
+  try{jakeUnlocked=localStorage.getItem('desert-strike-jake')==='true';const saved=JSON.parse(localStorage.getItem('desert-strike-checkpoint'));if(saved&&Number.isInteger(saved.level)&&saved.level>0&&saved.level<4&&Number.isFinite(saved.score)&&saved.score>=0)checkpoint=saved;}catch{}
+  persistedJake=jakeUnlocked;
+  function copilotUI(){const j=$('copilot').querySelector('option[value="jake"]');j.disabled=!jakeUnlocked;j.textContent=jakeUnlocked?'Jake — expert gunner and winch':'Jake — missing in action';const c=DesertReference.copilots[$('copilot').value];$('copilot-hint').textContent=`${c.name}: ${c.hint}`;}
+  copilotUI();$('copilot').onchange=copilotUI;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   function resize() { const r = canvas.getBoundingClientRect(), dpr = .5; w = r.width; h = r.height; canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = false; zoom = w / (w < 600 ? 340 : 480); }
   new ResizeObserver(resize).observe(canvas);
@@ -27,6 +32,9 @@
     mode = next; keys = {}; held = {}; pulse = {}; firing = false;
     $('overlay').hidden = next === 'playing'; $('pause').textContent = next === 'paused' ? 'Resume' : 'Pause';
     $('setup').hidden = next !== 'briefing'; $('retry').hidden = !['paused', 'lost', 'won'].includes(next);
+    $('copilot-setup').hidden=next!=='briefing'&&!(next==='won'&&g.level<3);
+    $('continue').hidden=next!=='briefing'||!checkpoint;
+    if(checkpoint)$('continue').textContent=`Continue operation ${checkpoint.level+1} · ${checkpoint.score.toLocaleString()} pts`;
     if (next === 'paused') { $('overlay-kicker').textContent = 'FLIGHT PAUSED'; $('overlay-title').textContent = 'Holding position.'; $('overlay-copy').textContent = 'Your aircraft is safe. Resume when you are ready.'; $('launch').textContent = 'Resume flight'; }
     if (next === 'won' || next === 'lost') {
       $('overlay-kicker').textContent = next === 'won' ? 'OPERATION COMPLETE' : 'OPERATION FAILED';
@@ -34,21 +42,22 @@
       $('overlay-copy').textContent = next === 'won' ? `${g.tasks.length} missions completed. ${g.delivered} personnel safe. Score ${g.score.toLocaleString()}. ${g.level === 3 ? 'All four campaigns are available from the flight briefing.' : 'Your next operation is ready.'}` : g.message;
       $('launch').textContent = next === 'won' ? (g.level < 3 ? 'Next operation' : 'Back to briefing') : 'Retry operation';
       $('retry').textContent = 'Back to briefing';
-      if (next === 'won') { best = Math.max(best, g.score); try { localStorage.setItem('desert-strike-best', String(best)); } catch {} }
+      if (next === 'won') { best = Math.max(best, g.score);checkpoint=g.level<3?{level:g.level+1,score:Math.floor(g.score/1000)*1000}:null;try { localStorage.setItem('desert-strike-best', String(best));if(checkpoint)localStorage.setItem('desert-strike-checkpoint',JSON.stringify(checkpoint));else localStorage.removeItem('desert-strike-checkpoint'); } catch {} }
     }
     if (next === 'briefing') { $('overlay-kicker').textContent = 'FLIGHT BRIEFING'; $('overlay-title').innerHTML = 'Bring everyone<br>home.'; $('overlay-copy').textContent = 'Follow the mission briefing. Capture intelligence, protect rescues, manage supplies, and return to the frigate.'; $('launch').textContent = ready ? 'Launch operation' : 'Loading flight deck…'; }
     if (next === 'playing') canvas.focus({ preventScroll: true });
   }
-  function start(level = Number($('mission').value)) { g = createGame(level, $('difficulty').value, $('controls').value); $('mission').value = String(level); mapOpen = false; $('big-map').hidden = true; mouse = null; setMode('playing'); refreshHUD(); }
+  function start(level = Number($('mission').value),score=0) { g = createGame(level, $('difficulty').value, $('controls').value,{copilotId:$('copilot').value,jakeUnlocked,score}); $('mission').value = String(level); mapOpen = false; $('big-map').hidden = true; mouse = null; setMode('playing'); refreshHUD(); }
   function pause() { if (mode === 'playing') setMode('paused'); else if (mode === 'paused') setMode('playing'); }
-  function toggleMap() { if (!['playing', 'paused'].includes(mode)) return; mapOpen = !mapOpen; $('big-map').hidden = !mapOpen; if (mapOpen) { keys = {}; held = {}; pulse = {}; firing = false; drawMap(large); } }
-  $('launch').onclick = () => { if (!ready) return; if (sound) initAudio(); if (mode === 'paused') setMode('playing'); else if (mode === 'won' && g.level < 3) start(g.level + 1); else if (mode === 'won') setMode('briefing'); else if (mode === 'lost') start(g.level); else start(); };
-  $('retry').onclick = () => { if (mode === 'paused') start(g.level); else { g = createGame(Number($('mission').value)); setMode('briefing'); refreshHUD(); } };
+  function toggleMap() { if (!['playing', 'paused'].includes(mode)) return; mapOpen = !mapOpen; $('big-map').hidden = !mapOpen;keys={};held={};pulse={};firing=false;if (mapOpen) { setupMap();drawMap(large);$('map-category').focus(); }else canvas.focus({preventScroll:true}); }
+  $('launch').onclick = () => { if (!ready) return; if (sound) initAudio(); if (mode === 'paused') setMode('playing'); else if (mode === 'won' && g.level < 3) start(g.level + 1,Math.floor(g.score/1000)*1000); else if (mode === 'won') setMode('briefing'); else if (mode === 'lost') start(g.level,g.startScore); else start(); };
+  $('continue').onclick=()=>{if(ready&&checkpoint)start(checkpoint.level,checkpoint.score);};
+  $('retry').onclick = () => { if (mode === 'paused') start(g.level,g.startScore); else { g = createGame(Number($('mission').value)); setMode('briefing'); refreshHUD(); } };
   $('pause').onclick = pause; $('map-toggle').onclick = toggleMap; $('close-map').onclick = toggleMap;
   $('sound').onclick = () => { try { initAudio(); sound = !sound; $('sound').textContent = sound ? 'Sound on' : 'Sound off'; $('sound').setAttribute('aria-pressed', String(sound)); } catch { $('sound').textContent = 'Sound unavailable'; } };
   $('mission').onchange = () => { g = createGame(Number($('mission').value), $('difficulty').value); refreshHUD(); };
   window.addEventListener('keydown', e => {
-    if (e.target instanceof HTMLSelectElement) return;
+    if (e.target instanceof HTMLSelectElement&&!['m','escape'].includes(e.key.toLowerCase())) return;
     const key = e.key.toLowerCase();
     if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) e.preventDefault();
     if (!e.repeat) {
@@ -90,11 +99,11 @@
     camera.x = Math.max(0, Math.min(g.world.width - w / zoom, p.x - w / zoom / 2)); camera.y = Math.max(0, Math.min(g.world.height - h / zoom, p.y - h / zoom / 2));
     ctx.clearRect(0, 0, w, h); ctx.save(); ctx.scale(zoom, zoom); ctx.translate(-camera.x, -camera.y);
     drawGround(ctx);
-    for(const o of g.scenery){sprite(8,o.x,o.y,90);}
+    for(const o of g.scenery){sprite(8,o.x,o.y,90,90,0,o.hp>0?1:.3);}
     sprite(10, g.base.x, g.base.y, 320); ring(g.base.x, g.base.y, 42, '#c5dfb377'); label('FRIGATE / DROP-OFF', g.base.x, g.base.y + 60, '#ceebbb');
     for (const s of g.supplies) if (!s.used&&!s.hidden) { sprite(5, s.x, s.y, 72); label(s.kind.toUpperCase(), s.x, s.y + 23, '#c7e8b2'); }
     for (const zone of [...g.zones, ...(g.oilZone?[g.oilZone]:[]), ...(g.flags.agentEntered?[]:g.agentZone?[g.agentZone]:[]), ...(g.embassy?[g.embassy]:[]), ...(g.palaceZone&&!g.flags.palaceEntered?[g.palaceZone]:[])]) {
-      if ((zone.kind==='agent' && !g.enemies.some(e=>e.group==='agent'&&!e.hidden&&e.hp<=0)) || (zone.kind==='palace' && g.stage<6)) continue;
+      if ((zone.kind==='agent' && !g.flags.trapdoorOpen) || (zone.kind==='palace' && g.stage<6)) continue;
       ring(zone.x,zone.y,42,'#abc98c');sprite(3,zone.x,zone.y,100);label(zone.label,zone.x,zone.y+35,'#d1e8ac');
     }
     for (const person of g.people) if (DesertCampaigns.waiting(person)) {
@@ -102,7 +111,7 @@
       if(distance(p,person)<100)label(person.role.toUpperCase(),person.x,person.y+18,'#f4dd8b');
       if(person.expires)label(Math.max(0,Math.ceil(person.expires-g.time))+'s',person.x,person.y-20,'#ffad77');
     }
-    if(g.bus){prop('bus',g.bus.x,g.bus.y,g.bus);label(g.bus.arrived?'OFFICIALS SAFE':'BUS: 12 OFFICIALS',g.bus.x,g.bus.y+56);}
+    if(g.bus){prop('bus',g.bus.x,g.bus.y,g.bus);label(g.bus.arrived?'OFFICIALS SAFE':`BUS: ${g.bus.boarded}/12 ABOARD`,g.bus.x,g.bus.y+56);}
     for(const tank of g.oilTanks||[]){prop('oil',tank.x,tank.y,tank);label('OIL '+Math.max(0,Math.ceil(tank.hp)),tank.x,tank.y+60);}
     for (const e of g.enemies) {
       if(e.hidden)continue;
@@ -119,7 +128,7 @@
     for (const e of g.effects) { const a = e.life / e.maxLife; ctx.fillStyle = `rgba(255,${Math.round(100 + a * 140)},54,${a})`; ctx.beginPath(); ctx.arc(e.x, e.y, (1 - a) * (e.kind === 'explosion' ? 30 : 10) + 5, 0, Math.PI * 2); ctx.fill(); }
     ctx.save(); ctx.translate(p.x + 10, p.y + 15); ctx.rotate(p.angle + Math.PI / 2); ctx.fillStyle = '#1b291d45'; ctx.beginPath(); ctx.ellipse(0, 0, 9, 22, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
     const bob = reduced ? 0 : Math.sin(g.time * 3) * 2;
-    if (g.winch > 0) { ctx.strokeStyle = '#f5df9b'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(p.x, p.y - 10); ctx.lineTo(p.x, p.y + 40); ctx.stroke(); ring(p.x, p.y, 45, '#f5c27a'); ctx.strokeStyle = '#fff3ce'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(p.x, p.y, 45, -Math.PI / 2, -Math.PI / 2 + g.winch / 1.1 * Math.PI * 2); ctx.stroke(); }
+    if (g.winch > 0) { ctx.strokeStyle = '#f5df9b'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(p.x, p.y - 10); ctx.lineTo(p.x, p.y + 40); ctx.stroke(); ring(p.x, p.y, 45, '#f5c27a'); ctx.strokeStyle = '#fff3ce'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(p.x, p.y, 45, -Math.PI / 2, -Math.PI / 2 + g.winch / (g.winchDuration||1) * Math.PI * 2); ctx.stroke(); }
     sprite(0, p.x, p.y - 8 + bob, 135, 155, p.angle + Math.PI / 2);
     ctx.save(); ctx.translate(p.x, p.y - 10 + bob); ctx.rotate(reduced ? .5 : g.time * 39); ctx.strokeStyle = '#172119c9'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-26, 0); ctx.lineTo(26, 0); ctx.moveTo(0, -26); ctx.lineTo(0, 26); ctx.stroke(); ctx.restore();
     // Direction marker keeps the next objective discoverable when it is offscreen.
@@ -166,15 +175,31 @@
     groundLevel=g.level;
   }
   function drawGround(c){if(!ground||groundLevel!==g.level)buildGround();c.drawImage(ground,0,0,g.world.width,g.world.height);}
+  function setupMap(){
+    const entries=[['all','All known locations'],...g.tasks.flatMap((t,i)=>g.level===3&&i>g.stage?[]:[[`mission:${i}`,`${i+1}. ${t.title}${t.done?' — complete':''}`]]),['personnel','Personnel / MIAs'],['fuel','Fuel'],['ammo','Ammunition'],['repair','Armor repairs'],['landing','Landing zones'],['defenses','Enemy weapons']];
+    $('map-category').replaceChildren(...entries.map(([value,label])=>{const o=document.createElement('option');o.value=value;o.textContent=label;return o;}));
+    $('map-category').value=`mission:${Math.min(g.stage,g.tasks.length-1)}`;mapIntel();
+  }
+  function mapIntel(){
+    const category=$('map-category').value,objects=DesertCampaigns.mapObjects(g,category);
+    const task=category.startsWith('mission:')?g.tasks[Number(category.slice(8))]:null;
+    const types=[...new Set(objects.filter(e=>e.weapon).map(e=>e.weapon))];
+    $('map-intel').textContent=task?`${task.done?'COMPLETE':'PENDING'} · ${task.hint}`:types.length?types.map(t=>{const w=DesertReference.weapons[t];return `${t.toUpperCase()}: armor ${w.armor}, hit ${w.damage}`;}).join(' · '):`${objects.length} known locations. Concealed supplies appear after their cover is destroyed.`;
+    $('map-intel').className=task?.done?'complete':'';
+  }
+  $('map-category').onchange=()=>{mapIntel();drawMap(large);};
   function drawMap(c){
     const size=c.canvas.width,scale=size/g.world.width,offset=(size-g.world.height*scale)/2;
     c.fillStyle='#112c23';c.fillRect(0,0,size,size);c.save();c.translate(0,offset);
     if(!ground||groundLevel!==g.level)buildGround();c.globalAlpha=.6;c.drawImage(ground,0,0,size,g.world.height*scale);c.globalAlpha=1;
     const dot=(o,color,r=3)=>{c.fillStyle=color;c.beginPath();c.arc(o.x*scale,o.y*scale,r,0,Math.PI*2);c.fill();};
-    g.enemies.filter(e=>e.hp>0&&!e.hidden&&!e.cache).forEach(e=>dot(e,e.civilian?'#a5ce86':e.deadline&&Math.floor(g.time*4)%2?'#fff2b5':'#ff7654',e.weapon?2:3));
-    g.people.filter(DesertCampaigns.waiting).forEach(e=>dot(e,'#ffb44e',2));g.supplies.filter(e=>!e.used&&!e.hidden).forEach(e=>dot(e,'#a3c58c',2));
+    const filtered=c===large&&$('map-category').value!=='all',selected=filtered?DesertCampaigns.mapObjects(g,$('map-category').value):null;
+    const show=e=>!filtered||selected.includes(e),blink=filtered&&Math.floor(performance.now()/350)%2===0;
+    g.enemies.filter(e=>e.hp>0&&!e.hidden&&!e.cache&&show(e)).forEach(e=>dot(e,blink?'#fff2b5':e.civilian?'#a5ce86':'#ff7654',e.weapon?2:3));
+    g.people.filter(e=>DesertCampaigns.waiting(e)&&show(e)).forEach(e=>dot(e,blink?'#fff2b5':'#ffb44e',2));g.supplies.filter(e=>!e.used&&!e.hidden&&show(e)).forEach(e=>dot(e,blink?'#fff2b5':'#a3c58c',2));
     for(const z of [g.base,...g.zones,...(g.oilZone?[g.oilZone]:[])]){dot(z,'#e4ead1',4);c.fillStyle='#e4ead1';c.font='10px monospace';c.fillText(z===g.base?'H':'L',z.x*scale+5,z.y*scale);}
     if(g.bus?.active)dot(g.bus,'#f1d663',4);
+    if(selected)selected.filter(e=>e.label).forEach(e=>dot(e,blink?'#fff2b5':'#a3c58c',5));
     const t=nextObjective(g);if(t){c.strokeStyle='#ffdd76';c.lineWidth=1;c.strokeRect(t.x*scale-5,t.y*scale-5,10,10);}
     dot(g.player,'#d2ff99',3);c.strokeStyle='#dbe9c96a';c.strokeRect(camera.x*scale,camera.y*scale,w/zoom*scale,h/zoom*scale);c.restore();
   }
@@ -184,13 +209,14 @@
     $('mission-copy').textContent=missions[g.level].text;
     $('current-mission').textContent=current?`Mission ${g.stage+1}: ${current.title}`:'Return to the frigate';
     $('mission-hint').textContent=current?current.hint:'Hover over the frigate to complete the campaign.';
-    $('mission-list').replaceChildren(...g.tasks.map((t,i)=>{const li=document.createElement('li');li.textContent=g.level===3&&i>Math.max(1,g.stage)?'Awaiting orders':t.title;li.className=t.done?'complete':i===g.stage?'active':'';return li;}));
+    $('mission-list').replaceChildren(...g.tasks.map((t,i)=>{const li=document.createElement('li');li.textContent=g.level===3&&i>g.stage?'Awaiting orders':t.title;li.className=t.done?'complete':i===g.stage?'active':'';return li;}));
     $('radar-count').textContent=`${done}/${g.tasks.length}`; $('crew-count').textContent=String(g.delivered);
     $('radar-objective').classList.toggle('complete',done===g.tasks.length);$('crew-objective').classList.toggle('complete',g.status==='won');$('base-objective').classList.toggle('complete',g.status==='won');
     for(const key of ['fuel','armor','rockets','hellfires']) { $(key).value=p[key]; $(key+'-value').textContent=Math.ceil(p[key]); }
     $('cabin').value=p.crew;$('cabin-value').textContent=`${p.crew}/6`;$('ammo-value').textContent=p.ammo;
     $('lives').textContent=`LIVES ${g.lives}`; $('score').textContent=String(g.score).padStart(6,'0');$('clock').textContent=`${String(Math.floor(g.time/60)).padStart(2,'0')}:${String(Math.floor(g.time%60)).padStart(2,'0')}`;
     $('radio').textContent=mode==='playing' && g.messageTime>0 ? g.message : '';
+    if(g.jakeUnlocked&&!persistedJake){jakeUnlocked=true;persistedJake=true;copilotUI();try{localStorage.setItem('desert-strike-jake','true');}catch{}}
     drawMap(mini); if(mapOpen) drawMap(large);
   }
   function frame(now) {
@@ -200,5 +226,5 @@
     draw();hudTime+=dt;if(hudTime>.1){refreshHUD();hudTime=0;}requestAnimationFrame(frame);
   }
   atlas.decode().then(()=>{ready=true;$('launch').disabled=false;$('launch').textContent='Launch operation';refreshHUD();}).catch(()=>{$('overlay-copy').textContent='The flight artwork could not load. Reload the page, or extract the complete download before opening index.html.';$('launch').textContent='Artwork unavailable';});
-  resize();refreshHUD();requestAnimationFrame(frame);
+  resize();setMode('briefing');refreshHUD();requestAnimationFrame(frame);
 })();
