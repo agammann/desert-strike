@@ -6,6 +6,8 @@ A standalone recreation of the 1992 helicopter game, built by **agammann** with 
 
 No ROM, emulator, account, installation, or runtime download is needed. The offline release is one self-contained HTML game that opens in a modern browser.
 
+**Fidelity status:** this is an unfinished recreation, not a one-to-one replacement. The supplied DOS CD edition includes a fifth campaign, **Supergun**, which is not yet implemented. Version 0.5.2 corrects confirmed first-campaign placements, target counts and armor values. See the [DOS comparison](docs/DOS-COMPARISON.md) and [remaining differences](docs/FIDELITY.md).
+
 ![Desert Strike recreation: pixel-art helicopter approaching radar defenses, a landing zone, tactical map and aircraft instruments](docs/gameplay.png)
 
 ## Play offline

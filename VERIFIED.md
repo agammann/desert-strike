@@ -1,16 +1,18 @@
 # Verification
 
-Version **0.5.1**, checked on **20 September 2026**. These checks establish completion and behavior of this standalone implementation. They do not establish identical difficulty, object placement or timing against the 1992 executable. The [fidelity ledger](docs/FIDELITY.md) records the remaining differences.
+Version **0.5.2**, checked on **20 September 2026**. These checks establish completion and behavior of this standalone implementation. They do not establish identical difficulty, object placement or timing against the original executable. The [fidelity ledger](docs/FIDELITY.md) and [DOS comparison](docs/DOS-COMPARISON.md) record the remaining differences. Older checks below retain their version labels.
 
 ## Simulation
 
-**51 tests passed** with `node --test tests/campaigns.test.cjs`, including all four campaigns in both Standard and Relaxed. The test pilot reads state and emits movement, aim, fire and winch inputs. It never teleports, replenishes resources, skips objectives, changes timers or directly destroys targets. It knows the world state, including cache contents; it is a completion test, not a model of a new player's knowledge or skill.
+**53 tests passed** with `node --test tests/campaigns.test.cjs`, including all four campaigns in both Standard and Relaxed. The test pilot reads state and emits movement, aim, fire and winch inputs. It never teleports, replenishes resources, skips objectives, changes timers or directly destroys targets. It knows the world state, including cache contents; it is a completion test, not a model of a new player's knowledge or skill.
 
 Focused regressions cover mission transitions and losses, documented weapon values, finite resources, heading-preserving strafe, collision damage, escorts, rescue quotas, copilots, hidden objects, swept projectile collision, warnings, embassy boarding and ambushes, and the breached yacht obstacle. New checks cover the palace vehicle journey, copilot transfer and bomber rescue; failure when the occupied vehicle is destroyed; civilian penalties and bonus rescues; final-campaign defenses and extra lives; and identical held-input flight, fuel and ammunition results at 30, 60 and 144 render frames per second.
 
 An early automated approach to the nuclear scientist building caused friendly fire. The pilot now clears the radar controllers and approaches the building from the side opposite its exit. The game's damage rules were retained. All eight campaign/difficulty combinations then passed.
 
 ## Browser campaigns
+
+In **v0.5.2**, the changed Air Superiority campaign completed again in Standard / From Above / X-Man through the rendered browser input loop: **5/5 objectives, 333.38 simulated seconds, three personnel delivered, zero uncaught errors**. All 18 airfield objects were required by the objective. The two new regressions verify that leaving the last airfield object alive prevents completion, entity IDs remain unique, and a 100-damage Hellfire destroys the corrected 100-armor radar. Power and command values were also checked. Browser automation used Playwright because the Browser plugin was unavailable. This does not measure DOS difficulty equivalence.
 
 In v0.5.0, all four campaigns completed in **Standard / From Above / X-Man** in headless Microsoft Edge using Playwright. A local observer reads game state and dispatches ordinary keyboard and pointer events. Virtual animation time accelerates the run; the game's normal update/render loop handles the input. The observer does not modify mission state or aircraft resources and is not included in release artifacts.
 

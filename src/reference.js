@@ -54,6 +54,16 @@
       fuel:[[2200,1320],[3740,1770],[4530,3000],[5200,3290],[3810,450],[1620,900]],ammo:[[2080,1600],[3460,2170],[4580,3450],[5310,1280],[1120,520],[1830,730]],repair:[[2230,1650],[3560,2820],[4700,2200],[5400,3370],[3850,1280]],winch:[2490,2050],life:[4680,3440],
     },
   ];
+  // Named building records in the supplied DOS CD edition's LEVEL0 / THINGS.
+  // These are world anchors, not sprite bounds. See docs/DOS-COMPARISON.md.
+  const dosAirfields=[
+    ['jet',3316,768,20],['jet',3420,808,20],['jet',3428,712,20],
+    ['tower',3208,712,150],['jet',3204,824,20],['jet',3116,704,20],
+    ['airfield',3200,644,200],['airfield',3520,780,200],['jet',3388,968,20],
+    ['jet',4852,2304,20],['jet',4956,2344,20],['jet',4964,2248,20],
+    ['tower',4744,2248,150],['jet',4740,2360,20],['jet',4652,2240,20],
+    ['airfield',4736,2180,200],['airfield',5056,2316,200],['jet',4924,2504,20],
+  ];
   const terrain=typeof module!=='undefined'&&module.exports?require('./terrain-data.js'):root.DesertTerrain;
   maps.forEach((map,i)=>{map.coast=terrain[i].coast;});
   function coastAt(map,y){const points=map.coast;if(y<=points[0][1])return points[0][0];for(let i=1;i<points.length;i++){const [x1,y1]=points[i-1],[x2,y2]=points[i];if(y<=y2)return x1+(x2-x1)*(y-y1)/(y2-y1);}return points.at(-1)[0];}
@@ -104,6 +114,16 @@
       const hp={radar:200,power:450,airfield:195,tower:135,jet:24,command:300,prison:240,chemical:300,bunker:240,plant:500,palace:1000,bomber:3000,yacht:600,scud:200,dune:36,pipe:24,gate:80,truck:150,atv:300}[e.kind]||e.hp;
       e.hp=e.maxHp=hp;e.collisionRadius=e.kind==='yacht'?30:['jet','scud','truck','pipe','dune','bomber','gate'].includes(e.kind)?0:20;
       if(e.kind==='yacht')e.solidWreck=true;
+    }
+    if(g.level===0){
+      // Replace the eight placeholder airfield objects with both complete DOS clusters.
+      g.enemies=g.enemies.filter(e=>e.group!=='airfields');
+      g.enemies.forEach((e,i)=>e.id=i);
+      for(const [kind,x,y,hp] of dosAirfields)g.enemies.push({id:g.enemies.length,x,y,kind,group:'airfields',hp,maxHp:hp,collisionRadius:kind==='jet'?0:20,cooldown:2});
+      const set=(group,points,hp)=>g.enemies.filter(e=>e.group===group).forEach((e,i)=>{[e.x,e.y]=points[i];e.hp=e.maxHp=hp;});
+      set('radars',[[1792,688],[2816,1728]],100);
+      set('power',[[4281,762]],400);
+      set('commands',[[5416,819],[5416,1331]],250);
     }
     const guards=g.enemies.filter(e=>e.kind==='tank');
     // Relocate old generic guards and give each its campaign-appropriate weapon.

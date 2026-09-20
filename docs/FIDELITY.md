@@ -1,6 +1,6 @@
-# Genesis fidelity ledger
+# Fidelity ledger
 
-The reference is **Desert Strike: Return to the Gulf for Genesis / Mega Drive (1992)**. This v0.5.1 recreation runs on its own JavaScript engine. It does not load a ROM or emulate the original executable. A successful campaign test does not establish identical difficulty or frame timing.
+The initial reference was **Desert Strike: Return to the Gulf for Genesis / Mega Drive (1992)**. Version 0.5.2 starts correcting first-campaign objects against a supplied DOS CD edition; its [comparison report](DOS-COMPARISON.md) takes precedence for those objects and records the unimplemented fifth campaign. This recreation runs on its own JavaScript engine. It does not load a ROM or emulate the original executable. A successful campaign test does not establish identical difficulty or frame timing.
 
 ## Documented values
 
@@ -36,7 +36,7 @@ DarkWolf's [Genesis maps on VGMaps](https://www.vgmaps.com/Atlas/Genesis/) suppl
 
 These dimensions match the reference images, not a verified internal coordinate system. `src/terrain-data.js` contains the selected tile grids, palette maps and a water boundary sampled every 16 pixels. On a four-pixel sampling grid, reconstructed terrain agreed with reference pixels at 96.69%, 97.03%, 96.04% and 95.95% respectively. The comparison includes reference buildings that are not part of the terrain tiles, so **these are terrain-comparison statistics, not game-fidelity percentages**. The least separated first/second tile candidate differs by 0.78 percentage points; some populated blocks remain ambiguous.
 
-Building, enemy, resource, hidden-object and landing-zone coordinates remain manually placed estimates. Smaller buildings and some encounters are absent. The renderer now uses original DOS artwork, with directional helicopter frames and distinct vehicle bodies/turrets. This does not establish identical Genesis sprites, animation cadence or collision shapes.
+Building, enemy, resource, hidden-object and landing-zone coordinates remain manually placed estimates, except for the first-campaign radars, power station, command centers and 18 airfield objects corrected from DOS records in v0.5.2. Smaller buildings and some encounters are absent. The renderer uses original DOS artwork, with directional helicopter frames and distinct vehicle bodies/turrets. This does not establish identical animation cadence or collision shapes.
 
 ## Gameplay and difficulty changes
 

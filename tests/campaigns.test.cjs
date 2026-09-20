@@ -153,6 +153,28 @@ test('original sprite headings face north, east, south and west without selectin
   draws=[];scope.DesertArt.object(ctx,{weapon:'crotale',x:0,y:0,heading:0},0);assert.equal(draws[0][1],768,'Crotale uses its missile vehicle row');
 });
 
+test('DOS airfield objective requires all twelve aircraft, four hangars and two towers',()=>{
+  const g=createGame(),targets=g.enemies.filter(e=>e.group==='airfields');
+  assert.equal(targets.filter(e=>e.kind==='jet').length,12);
+  assert.equal(targets.filter(e=>e.kind==='airfield').length,4);
+  assert.equal(targets.filter(e=>e.kind==='tower').length,2);
+  targets.slice(0,-1).forEach(e=>destroy(g,e));assert.equal(g.tasks[2].test(),false);
+  destroy(g,targets.at(-1));assert.equal(g.tasks[2].test(),true);
+  assert.equal(new Set(g.enemies.map(e=>e.id)).size,g.enemies.length);
+});
+
+test('first-campaign DOS radar takes one 100-damage Hellfire',()=>{
+  const g=createGame(),radar=g.enemies.find(e=>e.group==='radars');
+  assert.deepEqual([radar.x,radar.y,radar.maxHp],[1792,688,100]);
+  g.enemies=[radar];g.people=[];g.supplies=[];g.scenery=[];
+  hover(g,{x:radar.x-150,y:radar.y});g.player.angle=0;
+  update(g,{hellfire:true,aimX:radar.x,aimY:radar.y});step(g,{},.6);
+  assert.ok(radar.hp<=0);assert.equal(g.player.hellfires,7);
+  const original=createGame();
+  assert.deepEqual(original.enemies.filter(e=>e.group==='commands').map(e=>[e.x,e.y,e.hp]),[[5416,819,250],[5416,1331,250]]);
+  assert.equal(original.enemies.find(e=>e.group==='power').hp,400);
+});
+
 test('escort bus faces its next waypoint while moving',()=>{
   const g=createGame(2),b=g.bus;g.stage=7;g.tasks.slice(0,7).forEach(t=>t.done=true);g.enemies=[];
   b.active=true;b.boarded=12;b.waypoint=0;b.path=[{x:b.x-100,y:b.y}];hover(g,{x:b.x+100,y:b.y});
