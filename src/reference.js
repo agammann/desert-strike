@@ -54,6 +54,8 @@
       fuel:[[2200,1320],[3740,1770],[4530,3000],[5200,3290],[3810,450],[1620,900]],ammo:[[2080,1600],[3460,2170],[4580,3450],[5310,1280],[1120,520],[1830,730]],repair:[[2230,1650],[3560,2820],[4700,2200],[5400,3370],[3850,1280]],winch:[2490,2050],life:[4680,3440],
     },
   ];
+  const terrain=typeof module!=='undefined'&&module.exports?require('./terrain-data.js'):root.DesertTerrain;
+  maps.forEach((map,i)=>{map.coast=terrain[i].coast;});
   function coastAt(map,y){const points=map.coast;if(y<=points[0][1])return points[0][0];for(let i=1;i<points.length;i++){const [x1,y1]=points[i-1],[x2,y2]=points[i];if(y<=y2)return x1+(x2-x1)*(y-y1)/(y2-y1);}return points.at(-1)[0];}
   function water(g,x,y){return x<coastAt(g.world,y);}
   function configureEnemy(e,type){const w=weapons[type];e.weapon=type;e.hp=w.armor;e.maxHp=w.armor;e.heading=Math.PI;e.homeX=e.x;e.homeY=e.y;return e;}
@@ -86,18 +88,20 @@
       g.enemies.filter(e=>e.group==='oil-enemies').forEach((e,i)=>{e.x=g.oilTanks[i].x+160;e.y=g.oilTanks[i].y-100;});
       g.enemies.filter(e=>e.kind==='truck').forEach((e,i)=>Object.assign(e,{x:4740+(i%3)*210,y:2400+Math.floor(i/3)*380,homeX:4740+(i%3)*210,homeY:2400+Math.floor(i/3)*380}));
       Object.assign(g.palaceZone,{x:3330,y:1320});
+      Object.assign(g.enemies.find(e=>e.kind==='atv'),{x:3330,y:1390});
     }
     // Replace the repeated full-service bundles with finite, scattered resources.
     g.supplies=[];for(const kind of ['fuel','ammo','repair'])m[kind].forEach(([x,y],i)=>g.supplies.push({x,y,kind,used:false,hidden:kind!=='repair'&&i%3===1}));
     g.supplies.push({x:m.winch[0],y:m.winch[1],kind:'winch',used:false,hidden:true});
     g.supplies.push({x:m.life[0],y:m.life[1],kind:'life',used:false,hidden:true});
+    if(g.level===3)for(const [x,y]of [[5280,3480],[4850,2430]])g.supplies.push({x,y,kind:'life',used:false,hidden:true});
     // Optional MIAs supply armor through rescue, not through free repairs at every site.
     g.people=g.people.filter(p=>p.role!=='MIA');
     const miaCount=g.level===0?20:8;
     for(let i=0;i<miaCount;i++){const z=g.zones[i%g.zones.length];g.people.push({id:g.people.length,x:z.x+180+(i%3)*18,y:z.y+140+Math.floor(i/3)*25,role:'MIA',rescued:false,dead:false,delivered:false});}
     // Building resistance is calibrated separately from the documented weapon table.
     for(const e of g.enemies)if(e.kind!=='tank'){
-      const hp={radar:200,power:450,airfield:195,tower:135,jet:24,command:300,prison:240,chemical:300,bunker:240,plant:500,palace:1000,bomber:3000,yacht:600,scud:200,dune:36,pipe:24,gate:80,truck:150}[e.kind]||e.hp;
+      const hp={radar:200,power:450,airfield:195,tower:135,jet:24,command:300,prison:240,chemical:300,bunker:240,plant:500,palace:1000,bomber:3000,yacht:600,scud:200,dune:36,pipe:24,gate:80,truck:150,atv:300}[e.kind]||e.hp;
       e.hp=e.maxHp=hp;e.collisionRadius=e.kind==='yacht'?30:['jet','scud','truck','pipe','dune','bomber','gate'].includes(e.kind)?0:20;
       if(e.kind==='yacht')e.solidWreck=true;
     }
@@ -120,7 +124,14 @@
       else if(g.level===2){add(e,e.kind==='chemical'?'vda':e.kind==='command'?'m48':'rapier',-100,70,e.group==='ambassador'?'optional-radar':null);}
     }
     if(g.level===2){for(const p of g.people.filter(h=>h.role==='pilot'))add(p,'speedboat',100,-60);const y=g.enemies.find(e=>e.kind==='yacht');add(y,'speedboat',120,-100,'power');add(y,'chopper',-100,-100,'power');}
-    if(g.level===3){for(const site of g.enemies.filter(e=>['nuclear','palace','power','shelters'].includes(e.group))){add(site,site.group==='shelters'?'m48':'crotale',-110,75,site.group==='palace'?'power':null);g.enemies.at(-1).hidden=site.hidden;g.enemies.at(-1).revealWith=site.group;}}
+    if(g.level===3){
+      for(const site of g.enemies.filter(e=>['nuclear','palace','power','shelters'].includes(e.group))){add(site,['shelters','power'].includes(site.group)?'m48':'crotale',-110,75,site.group==='palace'?'power':site.group==='nuclear'?'nuclear-radar':null);g.enemies.at(-1).hidden=site.hidden;g.enemies.at(-1).revealWith=site.group;}
+      for(const [x,y]of [[4930,460],[5510,1120]])g.enemies.push({id:g.enemies.length,x,y,kind:'radar',group:'nuclear-radar',hp:200,maxHp:200,collisionRadius:20,hidden:true,revealWith:'nuclear'});
+      const plant=g.enemies.find(e=>e.group==='nuclear');
+      for(const [x,y]of [[160,180],[-240,-120]]){add(plant,'crotale',x,y,'nuclear-radar');Object.assign(g.enemies.at(-1),{hidden:true,revealWith:'nuclear'});}
+      const palace=g.enemies.find(e=>e.kind==='palace');
+      for(const [type,x,y]of [['aaa',120,90],['rapier',100,-100]]){add(palace,type,x,y,'power');Object.assign(g.enemies.at(-1),{hidden:true,revealWith:'palace'});}
+    }
     g.supplies.forEach((s,i)=>{s.id=i;if(s.hidden)g.enemies.push({id:g.enemies.length,x:s.x,y:s.y,kind:'cache',group:'optional-cache',cache:s.kind,supplyId:i,hp:45,maxHp:45,collisionRadius:16});});
     if(g.level<2&&!g.jakeUnlocked)g.people.push({x:m.life[0]+70,y:m.life[1]+70,role:'Valdez',rescued:false,dead:false,delivered:false});
     g.people.forEach((p,i)=>p.id=i);

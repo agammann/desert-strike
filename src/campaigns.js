@@ -8,7 +8,16 @@
   ];
   const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
   const alive = e => e.hp > 0 && !e.hidden;
-  const waiting = p => !p.rescued && !p.dead;
+  const waiting = p => !p.rescued && !p.dead && !p.hidden && !p.captive;
+  // Scoring rules follow the manual; point amounts remain reconstruction values.
+  function score(g, category, amount) {
+    const applied=Math.max(-g.score,amount);g.score+=applied;
+    g.scoreLog[category]=(g.scoreLog[category]||0)+applied;
+  }
+  function scoreObject(g,e){
+    if(e.civilian)score(g,'penalties',-500);
+    else if(e.group&&!e.cache)score(g,'targets',350);
+  }
   function tell(g, text) { g.message = text; g.messageTime = 7; }
   function fail(g, text) { if(g.status==='playing'){g.status = 'lost'; tell(g, text);} }
   function enemy(g, x, y, kind, group, extra = {}) {
@@ -88,7 +97,7 @@
       [[840,1020],[1110,880],[1480,1210],[1930,940]].forEach(([x,y])=>site(x,y,'dune','silos',{hidden:true,covered:true}));
       people(g,350,1230,'pilot',1); people(g,280,700,'pilot',1); people(g,430,420,'pilot',1);
       guard(480,1020); guard(480,570);
-      site(1650,1510,'power','power',{hidden:true});
+      site(1650,1510,'power','power');
       site(310,1530,'yacht','yacht');
       [[1930,1650],[2160,1650],[1930,1870],[2160,1870]].forEach(([x,y],i)=>site(x,y,'command','ambassador',i===2?release('ambassador'):{}));
       site(1870,1420,'radar','optional-radar');
@@ -116,6 +125,7 @@
       site(1830,1710,'palace','palace',{hidden:true});
       g.palaceZone={x:1830,y:1830,kind:'palace',label:'LAND: PALACE'};
       site(1200,400,'bomber','bomber',{hidden:true});
+      site(1830,1710,'atv','escape-vehicle',{hidden:true,hp:300,maxHp:300,civilian:true,occupied:true});
       task(g,'Oil fields','Collect all six commandos for the one-use landing zone. Destroy the tanks attacking the oil storage.',()=>g.flags.commandos===6&&destroyed(g,'oil-enemies')===3,()=>[...g.enemies.filter(e=>e.group==='oil-enemies'&&alive(e)),...g.people.filter(p=>p.role==='commando'&&waiting(p)),...(g.passengers.some(p=>p.role==='commando')?[g.oilZone]:[])]);
       demolition(g,'Oil spills','Hit the small pipe ends to seal all three spills.','pipes');
       evacuation(g,'Bomb shelters','Open four shelters and deliver at least 15 of the 16 civilians.','civilian',15,'shelters');
@@ -123,7 +133,7 @@
       task(g,'Nuclear plant','Destroy the weapons plant and cooling towers; capture the scientist.',()=>destroyed(g,'nuclear')===3&&captured(g,'scientist')===1,()=>[...g.people.filter(p=>p.role==='scientist'&&waiting(p)),...g.enemies.filter(e=>e.group==='nuclear'&&alive(e))]);
       demolition(g,'Power station','Cut power to the presidential palace.','power');
       task(g,'Presidential palace','Breach the palace and land at the marked entrance to send in your copilot.',()=>!!g.flags.palaceEntered,()=>destroyed(g,'palace')?[g.palaceZone]:g.enemies.filter(e=>e.group==='palace'&&alive(e)));
-      task(g,'Nuclear bomber','Intercept before takeoff. Rescue the copilot when he escapes, then destroy the bomber and return.',()=>destroyed(g,'bomber')===1&&g.copilot,()=>[...g.people.filter(p=>p.role==='copilot'&&waiting(p)),...g.enemies.filter(e=>e.group==='bomber'&&alive(e))]);
+      task(g,'Nuclear bomber','Follow the escape vehicle; hold fire while your copilot is aboard. Destroy the empty ATV at the airstrip, breach the bomber, rescue your copilot, then finish the aircraft.',()=>destroyed(g,'escape-vehicle')===1&&destroyed(g,'bomber')===1&&g.copilot,()=>[...g.people.filter(p=>p.role==='copilot'&&waiting(p)),...g.enemies.filter(e=>['escape-vehicle','bomber'].includes(e.group)&&alive(e))]);
     }
     tell(g, g.tasks[0].hint);
   }
@@ -139,6 +149,7 @@
     if(p.role==='copilot')g.copilot=true;
   }
   function onDestroy(g, e) {
+    if(e.kind==='atv'&&e.occupied){fail(g,'Your copilot was still inside the escape vehicle. Hold fire until he disembarks.');return;}
     if(e.release)people(g,e.x,e.y+65,e.release.role,e.release.count,e.release);
     if(e.cache){const s=g.supplies.find(s=>s.id===e.supplyId);if(s)s.hidden=false;}
     if(e.trapdoor){g.flags.trapdoorOpen=true;tell(g,'Trapdoor exposed. Land at the marked entrance.');}
@@ -149,12 +160,16 @@
   function onHit(g,e,damage) {
     if(e.covered && e.hp<=0) {e.covered=false;e.kind='silo';e.hp=180;e.maxHp=180;e.deadline=g.time+(g.difficulty==='story'?55:30);tell(g,'Silo exposed. Stop the launch!');return true;}
     if(e.kind==='bomber'&&e.hp<=1000&&!g.flags.copilotEscaped) {
-      g.flags.copilotEscaped=true;people(g,e.x+110,e.y+110,'copilot',1);tell(g,'Your copilot escaped the bomber. Stop firing and winch him aboard.');
+      g.flags.copilotEscaped=true;
+      const h=g.people.find(p=>p.role==='copilot'&&p.captive);
+      if(h)Object.assign(h,{x:e.x+110,y:e.y+110,captive:false,hidden:false});
+      else people(g,e.x+110,e.y+110,'copilot',1);
+      tell(g,'Your copilot escaped the bomber. Stop firing and winch him aboard.');
     }
     return false;
   }
   function killPerson(g,p) {
-    if(!waiting(p))return;p.dead=true;g.score=Math.max(0,g.score-500);tell(g,'Personnel lost. Check the mission requirements.');
+    if(p.rescued||p.dead||p.hidden)return;p.dead=true;score(g,'penalties',-500);tell(g,'Personnel lost. Check the mission requirements.');
     if(['agent','copilot','ambassador','lead chemist','scientist','commando'].includes(p.role))fail(g,'Essential personnel lost. Retry the operation.');
   }
   function unload(g, zone) {
@@ -169,7 +184,12 @@
       const exiting=g.passengers.filter(canExit);
       exiting.forEach(p=>p.delivered=true);g.passengers=g.passengers.filter(p=>!canExit(p));
       if(exiting.some(p=>p.role==='Valdez')){g.jakeUnlocked=true;tell(g,'Valdez is safe. Jake is available for your next operation.');}
-      g.delivered+=exiting.length;g.score+=exiting.length*500;g.player.armor=Math.min(600,g.player.armor+exiting.length*(g.level===0?150:100));
+      g.delivered+=exiting.length;score(g,'delivery',exiting.length*500);g.player.armor=Math.min(600,g.player.armor+exiting.length*(g.level===0?150:100));
+      const quota={prisoner:10,POW:14,inspector:5,pilot:2,hostage:7,civilian:15};
+      for(const role of new Set(exiting.map(p=>p.role)))if(quota[role]){
+        const before=delivered(g,role)-exiting.filter(p=>p.role===role).length;
+        score(g,'bonus',(Math.max(0,delivered(g,role)-quota[role])-Math.max(0,before-quota[role]))*250);
+      }
       if(exiting.length)tell(g,`${exiting.length} personnel delivered safely.`);
     }
     g.player.crew=g.passengers.length;
@@ -215,19 +235,47 @@
         if(tank&&g.time>25)tank.hp-=dt*(g.difficulty==='story'?1:2);
       }
       if(g.oilTanks.filter(t=>t.hp<=0).length>1)fail(g,'Too much oil storage was destroyed. Stop the tanks sooner.');
-      if(destroyed(g,'palace')&&!g.flags.palaceEntered&&slow&&dist(p,g.palaceZone)<65){g.flags.palaceEntered=true;g.copilot=false;reveal(g,'bomber');g.enemies.find(e=>e.kind==='bomber').deadline=g.time+(g.difficulty==='story'?240:150);tell(g,'It was a trap! Your copilot was taken to the bomber. Intercept it before takeoff.');}
+      const vehicle=g.enemies.find(e=>e.kind==='atv'),plane=g.enemies.find(e=>e.kind==='bomber');
+      if(destroyed(g,'palace')&&!g.flags.palaceEntered&&slow&&dist(p,g.palaceZone)<65){
+        g.flags.palaceEntered=true;g.copilot=false;vehicle.hidden=false;
+        vehicle.path=[{x:3370,y:1670},{x:2170,y:1140},{x:plane.x+180,y:plane.y+110}];vehicle.waypoint=0;
+        tell(g,'Palace trap! Follow the ATV to the airstrip. HOLD FIRE: your copilot is inside.');
+      }
+      if(g.flags.palaceEntered&&vehicle.hp>0&&vehicle.occupied){
+        const t=vehicle.path[vehicle.waypoint],d=dist(vehicle,t),travel=Math.min(d,70*dt);
+        vehicle.heading=Math.atan2(t.y-vehicle.y,t.x-vehicle.x);
+        if(d>0){vehicle.x+=(t.x-vehicle.x)/d*travel;vehicle.y+=(t.y-vehicle.y)/d*travel;}
+        if(d<=travel+.01&&++vehicle.waypoint===vehicle.path.length){
+          vehicle.occupied=false;vehicle.civilian=false;g.flags.transfer=true;
+          people(g,vehicle.x-30,vehicle.y-45,'copilot',1,{captive:true});
+          tell(g,'ATV empty. Your copilot is being taken to the bomber. Keep fire clear of the escort.');
+        }
+      }
+      if(g.flags.transfer&&!g.flags.bomberBoarded){
+        const h=g.people.find(p=>p.role==='copilot'&&p.captive);
+        if(h&&!h.dead){const d=dist(h,plane),travel=Math.min(d,22*dt);
+          if(d>0){h.x+=(plane.x-h.x)/d*travel;h.y+=(plane.y-h.y)/d*travel;}
+          if(d<=travel+.01){h.hidden=true;g.flags.bomberBoarded=true;reveal(g,'bomber');plane.deadline=g.time+(g.difficulty==='story'?240:150);tell(g,'Bomber preparing for takeoff. Open a breach to free your copilot!');}
+        }
+      }
     }
     if(g.status!=='playing')return;
     g.tasks.forEach(t=>{if(!t.done&&t.test())t.done=true;});
     const next=g.tasks.findIndex(t=>!t.done), stage=next<0?g.tasks.length:next;
     if(stage!==g.stage){g.stage=stage;tell(g,stage===g.tasks.length?'Objectives complete. Return to the frigate.':g.tasks[stage].hint);}
-    if(g.level===3){const groups=[['oil-enemies'],['pipes'],['shelters'],['bomb-trucks','decoys'],['nuclear'],['power'],['palace'],['bomber']];for(let i=0;i<=Math.min(g.stage,7);i++)groups[i].forEach(group=>reveal(g,group));}
+    if(g.level===3){const groups=[['oil-enemies'],['pipes'],['shelters'],['bomb-trucks','decoys'],['nuclear'],['power'],['palace'],[]];for(let i=0;i<=Math.min(g.stage,7);i++)groups[i].forEach(group=>reveal(g,group));}
     if(g.status==='playing'&&g.stage===g.tasks.length&&dist(p,g.base)<85&&slow){g.status='won';tell(g,'Campaign complete. All required missions accomplished.');}
   }
   function objective(g) {
     if(g.player.crew>=6){if(g.passengers.some(p=>p.role==='commando'))return g.oilZone;return nearestZone(g);}
     const t=g.tasks[g.stage];if(!t)return g.base;
     let targets=t.targets().filter(e=>!e.hidden);
+    if(g.level===3&&g.stage===7){
+      const copilot=g.people.find(p=>p.role==='copilot'&&waiting(p));if(copilot)return copilot;
+      const vehicle=g.enemies.find(e=>e.kind==='atv'&&alive(e));
+      if(vehicle)return vehicle.occupied?{x:vehicle.x+110,y:vehicle.y-100,kind:'follow'}:vehicle;
+      if(!g.flags.bomberBoarded){const h=g.people.find(p=>p.role==='copilot'&&p.captive);if(h)return {x:h.x+130,y:h.y+120,kind:'follow'};}
+    }
     if(g.level===2&&g.stage===7&&g.bus.active){const blockers=g.enemies.filter(e=>e.group==='bus-route'&&alive(e)&&dist(e,g.bus)<240);targets=blockers.length?blockers:[g.bus];}
     const active=g.enemies.filter(e=>alive(e)&&e.deadline).sort((a,b)=>a.deadline-b.deadline);
     if(active.length)targets=[active[0]];
@@ -246,7 +294,7 @@
     if(category==='defenses')return g.enemies.filter(e=>alive(e)&&e.weapon);
     return [...g.enemies.filter(e=>alive(e)&&!e.cache),...g.people.filter(waiting),...g.supplies.filter(s=>!s.hidden&&!s.used)];
   }
-  const api={missions,initialize,onRescue,onDestroy,onHit,killPerson,unload,tick,objective,alive,waiting,mapObjects};
+  const api={missions,initialize,onRescue,onDestroy,onHit,killPerson,unload,tick,objective,alive,waiting,mapObjects,score,scoreObject};
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
   root.DesertCampaigns=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

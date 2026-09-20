@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir, cp } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, cp, readdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -6,15 +6,27 @@ const out = path.join(root, 'dist');
 await mkdir(out, { recursive: true });
 let html = await readFile(path.join(root, 'index.html'), 'utf8');
 const css = await readFile(path.join(root, 'src/style.css'), 'utf8');
+const readCredits = await readFile(path.join(root,'THIRD_PARTY.md'),'utf8');
 const reference = await readFile(path.join(root,'src/reference.js'),'utf8');
+const terrain = await readFile(path.join(root,'src/terrain-data.js'),'utf8');
 const campaigns = await readFile(path.join(root, 'src/campaigns.js'), 'utf8');
 const sim = await readFile(path.join(root, 'src/simulation.js'), 'utf8');
 const game = await readFile(path.join(root, 'src/game.js'), 'utf8');
+const art = await readFile(path.join(root, 'src/original-art.js'), 'utf8');
 const sprites = (await readFile(path.join(root, 'assets/sprites.png'))).toString('base64');
+const assets={sprites:`data:image/png;base64,${sprites}`};
+for(const file of await readdir(path.join(root,'assets/original/tiles')))assets['tile'+path.parse(file).name]=`data:image/png;base64,${(await readFile(path.join(root,'assets/original/tiles',file))).toString('base64')}`;
+for(const file of await readdir(path.join(root,'assets/original'))){
+  if(!/\.(png|mp3)$/.test(file))continue;
+  const mime=file.endsWith('.png')?'image/png':'audio/mpeg';
+  assets[path.parse(file).name]=`data:${mime};base64,${(await readFile(path.join(root,'assets/original',file))).toString('base64')}`;
+}
 html = html.replace('<link rel="stylesheet" href="src/style.css">', () => `<style>${css}</style>`);
-html = html.replace('<script src="src/reference.js"></script><script src="src/campaigns.js"></script><script src="src/simulation.js"></script><script src="src/game.js"></script>', () => `<script>window.GULF_ASSETS=${JSON.stringify({ sprites: `data:image/png;base64,${sprites}` })};</script><script>${reference}</script><script>${campaigns}</script><script>${sim}</script><script>${game}</script>`);
+html = html.replace('</head>',()=>`<!-- ${readCredits} -->\n</head>`);
+html = html.replace('<script src="src/terrain-data.js"></script><script src="src/reference.js"></script><script src="src/campaigns.js"></script><script src="src/simulation.js"></script><script src="src/original-art.js"></script><script src="src/game.js"></script>', () => `<script>window.GULF_ASSETS=${JSON.stringify(assets)};</script><script>${terrain}</script><script>${reference}</script><script>${campaigns}</script><script>${sim}</script><script>${art}</script><script>${game}</script>`);
 await writeFile(path.join(out, 'index.html'), html);
 await writeFile(path.join(out, 'Desert-Strike.html'), html);
 await writeFile(path.join(out, '.nojekyll'), '');
 await cp(path.join(root, 'LICENSE'), path.join(out, 'LICENSE'));
+await cp(path.join(root,'THIRD_PARTY.md'),path.join(out,'THIRD_PARTY.md'));
 console.log(`Built self-contained game: ${path.join(out, 'Desert-Strike.html')} (${(Buffer.byteLength(html) / 1024 / 1024).toFixed(1)} MB)`);

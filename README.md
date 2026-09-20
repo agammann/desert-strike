@@ -1,6 +1,6 @@
 # Desert Strike: Return to the Gulf
 
-A standalone recreation of the 1992 helicopter game, built by **agammann** with a custom JavaScript game engine and newly drawn pixel artwork. Play through 27 mission objectives across the original four-campaign structure: intelligence captures, timed missile interceptions, rescues, the embassy bus escort, and the final bomber attack.
+A standalone recreation of the 1992 helicopter game, built by **agammann** with a custom JavaScript game engine, original DOS sprite artwork and Mega Drive music. Play through 27 mission objectives across the original four-campaign structure: intelligence captures, timed missile interceptions, rescues, the embassy bus escort, and the final bomber attack.
 
 **[Play now on Sites](https://desert-strike.alx21.chatgpt.site/)** · **[GitHub Pages](https://agammann.github.io/desert-strike/)** · **[Download the offline game](https://github.com/agammann/desert-strike/releases/latest/download/Desert-Strike-offline.zip)** · **[Get the source](https://github.com/agammann/desert-strike/archive/refs/heads/main.zip)**
 
@@ -15,7 +15,7 @@ No ROM, emulator, account, installation, or runtime download is needed. The offl
 3. Open **Desert-Strike.html** in Chrome, Edge, or Firefox. Windows users can also double-click **Play.cmd**.
 4. Choose a campaign, copilot and control mode, then select **Launch operation**.
 
-You can disconnect from the internet before opening the extracted game. Artwork, sound synthesis, missions, and code are all included. There is no local server to install or run.
+You can disconnect from the internet before opening the extracted game. Artwork, music, sound effects, missions, and code are all included. There is no local server to install or run.
 
 ## Controls
 
@@ -35,7 +35,7 @@ The game starts in **Standard / With Momentum**: finite supplies, documented ene
 | **P** or **Escape** | Pause / resume |
 | **Enter** | Start / resume when the briefing is open |
 
-On narrow screens, use the direction pad and **Gun / Hydra / Hellfire** buttons. A keyboard is recommended for classic flight controls. Switching tabs or windows pauses the game automatically. Sound starts muted; use **Sound off** to enable it.
+On narrow screens, use the direction pad and **Gun / Hydra / Hellfire** buttons. A keyboard is recommended for classic flight controls. Switching tabs or windows pauses the game automatically. Sound starts muted; use **Sound off** to enable it. The title and selected campaign briefing play music; flight uses rotor and weapon sounds, with separate success, failure and ending tracks.
 
 ## Complete a campaign
 
@@ -65,11 +65,13 @@ Read **[the campaign guide](docs/CAMPAIGNS.md)** for every objective, rescue thr
 
 ## How close is it to the 1992 game?
 
-Version **0.4.0** corrects the first campaign to require one command center and its commander, expands the agent compound to three buildings, adds copilot selection and the Valdez rescue, and restores tactical-map categories. It also adds hidden fuel/ammunition, two-sided collision damage, low-resource warnings, embassy boarding attacks and an escort ambush. The four reconstructed maps, 27 objectives, finite supplies and documented enemy weapon values remain.
+Version **0.5.0** adds original sprite sheets, eight original music tracks, tile-based terrain reconstructed from the four map references, and the palace escape vehicle. Follow the occupied ATV to the airstrip, wait until your copilot disembarks, destroy the empty vehicle, breach the bomber, rescue him, and finish the aircraft. The nuclear complex now has two radar controllers and five Crotales. The final campaign has three hidden extra lives.
 
-It is **not a verified one-to-one port**. Coastlines, roads, target positions and the escort route are manual approximations. Enemy placement, ranges, flight speed, fuel rate, alert multipliers and mission timers have not been measured against an original-console run. Artwork and audio remain newly made. Cutscenes, the palace escape vehicle, original passwords, exact scoring and every original encounter are not reproduced. Copilot coefficients and boarding/wave timing remain estimates. Browser checkpoints replace the original password entry; there is no mid-campaign save. See the **[fidelity ledger](docs/FIDELITY.md)** for the exact values, source links and remaining differences. Passing a playthrough establishes that a campaign is completable, not that its difficulty is identical to the original.
+The simulation runs at **60 fixed updates per second** across different display frame rates. Scoring no longer rewards destroyed civilian trucks or scenery; bonus rescues and penalties appear in the completion report. Original numeric scoring and original-console movement timing remain unverified.
 
-Desert Strike: Return to the Gulf is the title of Electronic Arts' original game. This is an unofficial fan recreation and is not affiliated with or endorsed by Electronic Arts. No original game files are included.
+It is **not a verified one-to-one port**. The terrain grid is matched against map captures, but building, enemy and supply positions, flight coefficients, weapon ranges, mission timers, copilot assistance and encounter timing still include estimates. The supplied artwork is from the DOS version; the music is from the Mega Drive version. Some props and sound effects remain custom, and the complete original cutscenes and animations are absent. Browser checkpoints replace password entry; there is no mid-campaign save. See the **[fidelity ledger](docs/FIDELITY.md)** for sources, measurements and remaining differences. Passing a playthrough establishes completion, not identical original difficulty.
+
+Desert Strike: Return to the Gulf is Electronic Arts' original title. This is an unofficial fan recreation, not affiliated with or endorsed by Electronic Arts. No ROM, emulator or original executable is included. **Original artwork and music are not covered by the code's MIT license.** See **[artwork and music credits](THIRD_PARTY.md)** for the creators, extraction credits and source links.
 
 ## Build and verification
 

@@ -11,7 +11,8 @@
       base: { x: 200, y: 1920, kind: 'base' },
       player: { x: 200, y: 1920, vx: 0, vy: 0, angle: -Math.PI / 2, armor: 600, fuel: 100, ammo: 1178, rockets: 38, hellfires: 8, crew: 0, gunCd: 0, rocketCd: 0, hellfireCd: 0 },
       bullets: [], effects: [], delivered: 0, winch: 0, service: 0, targetId: null, messageTime: 7, events: [],
-      jakeUnlocked:!!options.jakeUnlocked, copilotId:options.copilotId||'xman', stunned:0, nextFuelWarning:14, armorWarned:false };
+      jakeUnlocked:!!options.jakeUnlocked, copilotId:options.copilotId||'xman', stunned:0, nextFuelWarning:14, armorWarned:false,
+      scoreLog:{targets:0,rescues:0,delivery:0,bonus:0,penalties:0}, accumulator:0 };
     if(!Reference.copilots[g.copilotId]||(g.copilotId==='jake'&&!g.jakeUnlocked))g.copilotId='xman';
     g.score=Math.max(0,Math.floor(Number(options.score)||0));
     g.startScore=g.score;
@@ -25,7 +26,7 @@
     e.hp-=amount;
     const changed=Campaigns.onHit(g,e,amount);
     burst(g,e.x,e.y,e.hp<=0?'explosion':'spark');
-    if(e.hp<=0&&!changed){g.score+=350;Campaigns.onDestroy(g,e);}
+    if(e.hp<=0&&!changed){Campaigns.scoreObject(g,e);Campaigns.onDestroy(g,e);}
   }
   // First intersection with a swept projectile, so a slow frame cannot skip a small target.
   function intersection(x,y,nx,ny,o,r){
@@ -94,7 +95,7 @@
       g.winchDuration=g.quickWinch?.5:target===person?winchSeconds:winchSeconds*1.4/2.2;
       if (person && p.crew < 6) {
         g.winch += dt;
-        if (g.winch >= g.winchDuration) { person.rescued = true; g.passengers.push(person); p.crew=g.passengers.length; g.winch = 0; g.score += 150; g.events.push('rescue'); message(g,person.role==='Valdez'?'Valdez aboard. Deliver him to the frigate to unlock Jake.':p.crew === 6 ? 'Cabin full. Return to base to deliver the crew.' : 'Personnel aboard. Hover to winch the next survivor.'); Campaigns.onRescue(g,person); }
+        if (g.winch >= g.winchDuration) { person.rescued = true; g.passengers.push(person); p.crew=g.passengers.length; g.winch = 0; Campaigns.score(g,'rescues',150); g.events.push('rescue'); message(g,person.role==='Valdez'?'Valdez aboard. Deliver him to the frigate to unlock Jake.':p.crew === 6 ? 'Cabin full. Return to base to deliver the crew.' : 'Personnel aboard. Hover to winch the next survivor.'); Campaigns.onRescue(g,person); }
       } else if (supply) {
         g.winch += dt;
         if (g.winch >= g.winchDuration) { supply.used = true; g.winch = 0; if (supply.kind === 'fuel') p.fuel = 100; if (supply.kind === 'ammo') { p.ammo = 1178; p.rockets = 38; p.hellfires = 8; } if (supply.kind === 'repair') p.armor = 600; if(supply.kind==='winch')g.quickWinch=true; if(supply.kind==='life')g.lives++; g.events.push('rescue'); message(g, 'Supplies recovered.'); }
@@ -128,7 +129,7 @@
         g.enemies.filter(Campaigns.alive).forEach(e=>consider(e,e.kind==='pipe'?10:e.kind==='tank'?14:24,'object'));
         g.scenery.filter(e=>e.hp>0).forEach(e=>consider(e,e.radius,'object'));
       }
-      g.people.filter(Campaigns.waiting).forEach(h=>consider(h,10,'person'));
+      g.people.filter(h=>!h.rescued&&!h.dead&&!h.hidden).forEach(h=>consider(h,10,'person'));
       g.supplies.filter(s=>!s.used&&!s.hidden&&['fuel','ammo'].includes(s.kind)).forEach(s=>consider(s,12,'supply'));
       if(g.bus?.active&&!g.bus.arrived)consider(g.bus,30,'bus');
       (g.oilTanks||[]).filter(t=>t.hp>0).forEach(t=>consider(t,42,'oil'));
@@ -142,8 +143,8 @@
           const alert=!(e.weapon==='aaa'&&e.alertGroup?.includes('radar'))&&e.weapon&&e.alertGroup&&g.enemies.some(r=>r.group===e.alertGroup&&Campaigns.alive(r));
           damageObject(g,e,b.damage/(alert?1.5:1));
         }else if(hit.kind==='supply'){
-          e.hp=(e.hp??30)-b.damage;if(e.hp<=0){e.used=true;e.destroyed=true;burst(g,e.x,e.y,'explosion');message(g,'Supply crate destroyed. Watch your fire.');}
-        }else e.hp-=b.damage;
+          e.hp=(e.hp??30)-b.damage;if(e.hp<=0){e.used=true;e.destroyed=true;if(!b.enemy)Campaigns.score(g,'penalties',-500);burst(g,e.x,e.y,'explosion');message(g,'Supply crate destroyed. Watch your fire.');}
+        }else {const hp=e.hp;e.hp-=b.damage;if(!b.enemy&&hp>0&&e.hp<=0)Campaigns.score(g,'penalties',-500);}
       }
     }
 
@@ -158,7 +159,17 @@
     if(p.armor<=125&&!g.armorWarned){message(g,'Armor critical. Rescue personnel or recover a repair crate.',4);g.armorWarned=true;}
     if(g.status==='playing')Campaigns.tick(g,dt);
   }
-  const api = { missions, createGame, update, distance, objective: Campaigns.objective, weapons: Reference.weapons };
+  // Render frames may vary; game logic always advances in 1/60-second steps.
+  // Cap catch-up after a stall so returning to the tab cannot consume a mission timer.
+  function advance(g,input,elapsed){
+    if(g.status!=='playing')return;
+    g.accumulator+=clamp(elapsed,0,.25);const events=[];
+    while(g.accumulator+1e-10>=1/60&&g.status==='playing'){
+      update(g,input,1/60);g.accumulator-=1/60;events.push(...g.events);
+    }
+    g.events=[...new Set(events)];
+  }
+  const api = { missions, createGame, update, advance, distance, objective: Campaigns.objective, weapons: Reference.weapons };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.DesertSim = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

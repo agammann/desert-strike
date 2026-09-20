@@ -1,0 +1,114 @@
+{
+  "sprites": {
+    "apache": {
+      "source": "https://www.spriters-resource.com/ms_dos/desertstrikereturntothegulf/asset/169770/",
+      "url": "https://www.spriters-resource.com/media/assets/167/169770.png?updated=1755486140",
+      "bytes": 41809
+    },
+    "enemies": {
+      "source": "https://www.spriters-resource.com/ms_dos/desertstrikereturntothegulf/asset/169771/",
+      "url": "https://www.spriters-resource.com/media/assets/167/169771.png?updated=1755486140",
+      "bytes": 45462
+    },
+    "allies": {
+      "source": "https://www.spriters-resource.com/ms_dos/desertstrikereturntothegulf/asset/169769/",
+      "url": "https://www.spriters-resource.com/media/assets/167/169769.png?updated=1755486140",
+      "bytes": 12916
+    },
+    "other": {
+      "source": "https://www.spriters-resource.com/ms_dos/desertstrikereturntothegulf/asset/169777/",
+      "url": "https://www.spriters-resource.com/media/assets/167/169777.png?updated=1755486140",
+      "bytes": 5029
+    },
+    "people": {
+      "source": "https://www.spriters-resource.com/ms_dos/desertstrikereturntothegulf/asset/169778/",
+      "url": "https://www.spriters-resource.com/media/assets/167/169778.png?updated=1755486140",
+      "bytes": 17283
+    },
+    "buildings": {
+      "source": "https://www.spriters-resource.com/ms_dos/desertstrikereturntothegulf/asset/170052/",
+      "url": "https://www.spriters-resource.com/media/assets/167/170052.png?updated=1755486152",
+      "bytes": 41740
+    },
+    "structures": {
+      "source": "https://www.spriters-resource.com/ms_dos/desertstrikereturntothegulf/asset/170054/",
+      "url": "https://www.spriters-resource.com/media/assets/167/170054.png?updated=1755486152",
+      "bytes": 11899
+    },
+    "objectives": {
+      "source": "https://www.spriters-resource.com/ms_dos/desertstrikereturntothegulf/asset/170051/",
+      "url": "https://www.spriters-resource.com/media/assets/167/170051.png?updated=1755486152",
+      "bytes": 71910
+    },
+    "natural": {
+      "source": "https://www.spriters-resource.com/ms_dos/desertstrikereturntothegulf/asset/170084/",
+      "url": "https://www.spriters-resource.com/media/assets/167/170084.png?updated=1755486153",
+      "bytes": 7811
+    }
+  },
+  "music": {
+    "title": {
+      "source": "https://archive.org/download/md_music_desert_strike_return_to_the_gulf/01%20-%20Title%20Theme%20-%20Rob%20Hubbard%2C%20Brian%20Schmidt.mp3",
+      "bytes": 1382481
+    },
+    "briefing1": {
+      "source": "https://archive.org/download/md_music_desert_strike_return_to_the_gulf/07%20-%20Mission%20Briefing%201%20-%20Rob%20Hubbard%2C%20Brian%20Schmidt.mp3",
+      "bytes": 1180568
+    },
+    "clear": {
+      "source": "https://archive.org/download/md_music_desert_strike_return_to_the_gulf/10%20-%20Campaign%20Clear%20-%20Rob%20Hubbard%2C%20Brian%20Schmidt.mp3",
+      "bytes": 1155177
+    },
+    "briefing2": {
+      "source": "https://archive.org/download/md_music_desert_strike_return_to_the_gulf/11%20-%20Mission%20Briefing%202%20-%20Rob%20Hubbard%2C%20Brian%20Schmidt.mp3",
+      "bytes": 749152
+    },
+    "briefing3": {
+      "source": "https://archive.org/download/md_music_desert_strike_return_to_the_gulf/13%20-%20Mission%20Briefing%203%20-%20Rob%20Hubbard%2C%20Brian%20Schmidt.mp3",
+      "bytes": 1653124
+    },
+    "failed": {
+      "source": "https://archive.org/download/md_music_desert_strike_return_to_the_gulf/16%20-%20Mission%20Failed%20-%20Rob%20Hubbard%2C%20Brian%20Schmidt.mp3",
+      "bytes": 200128
+    },
+    "briefing4": {
+      "source": "https://archive.org/download/md_music_desert_strike_return_to_the_gulf/17%20-%20Mission%20Briefing%204%20-%20Rob%20Hubbard%2C%20Brian%20Schmidt.mp3",
+      "bytes": 1083128
+    },
+    "ending": {
+      "source": "https://archive.org/download/md_music_desert_strike_return_to_the_gulf/19%20-%20Ending%20Theme%20-%20Rob%20Hubbard%2C%20Brian%20Schmidt.mp3",
+      "bytes": 1561449
+    }
+  },
+  "terrain": {
+    "source": "https://www.spriters-resource.com/ms_dos/desertstrikereturntothegulf/asset/170096/",
+    "url": "https://www.spriters-resource.com/media/assets/167/170096.zip?updated=1755486154",
+    "files": [
+      "tiles/00.png",
+      "tiles/01.png",
+      "tiles/02.png",
+      "tiles/03.png",
+      "tiles/04.png",
+      "tiles/05.png",
+      "tiles/06.png",
+      "tiles/07.png",
+      "tiles/08.png",
+      "tiles/09.png",
+      "tiles/10.png",
+      "tiles/11.png",
+      "tiles/12.png",
+      "tiles/13.png",
+      "tiles/14.png",
+      "tiles/15.png",
+      "tiles/16.png",
+      "tiles/17.png",
+      "tiles/18.png",
+      "tiles/19.png",
+      "tiles/20.png",
+      "tiles/21.png",
+      "tiles/22.png",
+      "tiles/23.png",
+      "tiles/24.png"
+    ]
+  }
+}

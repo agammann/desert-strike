@@ -2,8 +2,9 @@
 function pilot(g, objective) {
   const p=g.player, dist=o=>Math.hypot(o.x-p.x,o.y-p.y);
   let target=objective(g);
+  if(g.level===3&&g.stage===4){const radar=g.enemies.filter(e=>e.group==='nuclear-radar'&&!e.hidden&&e.hp>0).sort((a,b)=>dist(a)-dist(b))[0];if(radar)target=radar;}
   const urgent=g.enemies.filter(e=>e.hp>0&&!e.hidden&&e.deadline).sort((a,b)=>a.deadline-b.deadline)[0];
-  const copilot=g.people.find(h=>h.role==='copilot'&&!h.rescued&&!h.dead);
+  const copilot=g.people.find(h=>h.role==='copilot'&&!h.rescued&&!h.dead&&!h.hidden&&!h.captive);
   if(copilot)target=copilot;else if(urgent)target=urgent;
   let resource;
   if(p.fuel<28)resource='fuel';else if(p.armor<240)resource='repair';else if(p.ammo<180||(p.hellfires<1&&p.rockets<5))resource='ammo';
@@ -17,7 +18,7 @@ function pilot(g, objective) {
   let dx=tx-p.x,dy=ty-p.y,d=Math.hypot(dx,dy),range=attack?166:18;
   // Approach the ambassador's building from the side opposite its exit. Rounds already in
   // flight can otherwise hit personnel emerging between the aircraft and the wall.
-  const unsafeExit=attack&&target.release?.role==='ambassador'&&p.y>target.y+20;
+  const unsafeExit=attack&&['ambassador','scientist'].includes(target.release?.role)&&p.y>target.y+20;
   if(unsafeExit){dx=target.x+155-p.x;dy=target.y-80-p.y;d=Math.hypot(dx,dy);range=18;}
   if(attack&&target.weapon&&d<225){const a=Math.atan2(dy,dx),radial=(d-177)/35;dx=Math.cos(a)*radial-Math.sin(a);dy=Math.sin(a)*radial+Math.cos(a);d=999;}
   // Steer around collidable scenery rather than crossing through buildings.

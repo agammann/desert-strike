@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const { createGame, update, missions, distance, objective: nextObjective } = DesertSim;
+  const { createGame, advance, missions, distance, objective: nextObjective } = DesertSim;
   const $ = id => document.getElementById(id);
   const canvas = $('game'), ctx = canvas.getContext('2d'), mini = $('minimap').getContext('2d'), large = $('map-large').getContext('2d');
   const atlas = new Image();
@@ -10,6 +10,12 @@
   let g = createGame(), mode = 'briefing', ready = false, mapOpen = false, keys = {}, held = {}, mouse = null, firing = false;
   let w = 1000, h = 700, zoom = .8, camera = { x: 0, y: 0 }, last = performance.now(), sound = false, audio, rotor, rotorGain, hudTime = 0;
   let best = 0; try { best = Number(localStorage.getItem('desert-strike-best')) || 0; } catch {}
+  let music=null,musicName='',wantedMusic='title';
+  function syncMusic(){
+    if(!sound||!wantedMusic||document.hidden){music?.pause();return;}
+    if(musicName!==wantedMusic){music?.pause();musicName=wantedMusic;music=new Audio(assets[musicName]||`assets/original/${musicName}.mp3`);music.volume=.35;music.loop=!['failed','ending'].includes(musicName);}
+    if(music.paused)music.play().catch(()=>{});
+  }
   let jakeUnlocked=false,checkpoint=null,persistedJake=false;
   try{jakeUnlocked=localStorage.getItem('desert-strike-jake')==='true';const saved=JSON.parse(localStorage.getItem('desert-strike-checkpoint'));if(saved&&Number.isInteger(saved.level)&&saved.level>0&&saved.level<4&&Number.isFinite(saved.score)&&saved.score>=0)checkpoint=saved;}catch{}
   persistedJake=jakeUnlocked;
@@ -29,7 +35,8 @@
     o.type = kind === 'rescue' ? 'sine' : 'square'; o.frequency.setValueAtTime(f, now); o.frequency.exponentialRampToValueAtTime(kind === 'rescue' ? 1000 : 25, now + .17); a.gain.setValueAtTime(kind === 'gun' ? .016 : .035, now); a.gain.exponentialRampToValueAtTime(.001, now + .18); o.start(); o.stop(now + .2);
   }
   function setMode(next) {
-    mode = next; keys = {}; held = {}; pulse = {}; firing = false;
+    mode = next; keys = {}; held = {}; pulse = {}; firing = false;g.accumulator=0;last=performance.now();
+    wantedMusic=next==='briefing'?'title':next==='won'?(g.level===3?'ending':'clear'):next==='lost'?'failed':'';syncMusic();
     $('overlay').hidden = next === 'playing'; $('pause').textContent = next === 'paused' ? 'Resume' : 'Pause';
     $('setup').hidden = next !== 'briefing'; $('retry').hidden = !['paused', 'lost', 'won'].includes(next);
     $('copilot-setup').hidden=next!=='briefing'&&!(next==='won'&&g.level<3);
@@ -40,6 +47,7 @@
       $('overlay-kicker').textContent = next === 'won' ? 'OPERATION COMPLETE' : 'OPERATION FAILED';
       $('overlay-title').textContent = next === 'won' ? 'Operation accomplished.' : 'Operation failed.';
       $('overlay-copy').textContent = next === 'won' ? `${g.tasks.length} missions completed. ${g.delivered} personnel safe. Score ${g.score.toLocaleString()}. ${g.level === 3 ? 'All four campaigns are available from the flight briefing.' : 'Your next operation is ready.'}` : g.message;
+      if(next==='won')$('overlay-copy').textContent+=` Targets ${g.scoreLog.targets} · rescues ${g.scoreLog.rescues+g.scoreLog.delivery} · bonus ${g.scoreLog.bonus} · penalties ${g.scoreLog.penalties}.`;
       $('launch').textContent = next === 'won' ? (g.level < 3 ? 'Next operation' : 'Back to briefing') : 'Retry operation';
       $('retry').textContent = 'Back to briefing';
       if (next === 'won') { best = Math.max(best, g.score);checkpoint=g.level<3?{level:g.level+1,score:Math.floor(g.score/1000)*1000}:null;try { localStorage.setItem('desert-strike-best', String(best));if(checkpoint)localStorage.setItem('desert-strike-checkpoint',JSON.stringify(checkpoint));else localStorage.removeItem('desert-strike-checkpoint'); } catch {} }
@@ -54,8 +62,8 @@
   $('continue').onclick=()=>{if(ready&&checkpoint)start(checkpoint.level,checkpoint.score);};
   $('retry').onclick = () => { if (mode === 'paused') start(g.level,g.startScore); else { g = createGame(Number($('mission').value)); setMode('briefing'); refreshHUD(); } };
   $('pause').onclick = pause; $('map-toggle').onclick = toggleMap; $('close-map').onclick = toggleMap;
-  $('sound').onclick = () => { try { initAudio(); sound = !sound; $('sound').textContent = sound ? 'Sound on' : 'Sound off'; $('sound').setAttribute('aria-pressed', String(sound)); } catch { $('sound').textContent = 'Sound unavailable'; } };
-  $('mission').onchange = () => { g = createGame(Number($('mission').value), $('difficulty').value); refreshHUD(); };
+  $('sound').onclick = () => { try { initAudio(); sound = !sound; $('sound').textContent = sound ? 'Sound on' : 'Sound off'; $('sound').setAttribute('aria-pressed', String(sound));syncMusic(); } catch { $('sound').textContent = 'Sound unavailable'; } };
+  $('mission').onchange = () => { g = createGame(Number($('mission').value), $('difficulty').value);wantedMusic=`briefing${g.level+1}`;syncMusic();refreshHUD(); };
   window.addEventListener('keydown', e => {
     if (e.target instanceof HTMLSelectElement&&!['m','escape'].includes(e.key.toLowerCase())) return;
     const key = e.key.toLowerCase();
@@ -71,7 +79,7 @@
   });
   window.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
   window.addEventListener('blur', () => { if (mode === 'playing') setMode('paused'); });
-  document.addEventListener('visibilitychange', () => { if (document.hidden && mode === 'playing') setMode('paused'); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && mode === 'playing') setMode('paused');syncMusic(); });
   canvas.addEventListener('pointermove', e => { if (e.pointerType === 'touch') return; const r = canvas.getBoundingClientRect(); mouse = { x: e.clientX - r.left, y: e.clientY - r.top }; });
   canvas.addEventListener('pointerdown', e => { if (e.pointerType === 'touch' || mode !== 'playing') return; firing = true; canvas.setPointerCapture(e.pointerId); });
   window.addEventListener('pointerup', () => { firing = false; });
@@ -99,15 +107,16 @@
     camera.x = Math.max(0, Math.min(g.world.width - w / zoom, p.x - w / zoom / 2)); camera.y = Math.max(0, Math.min(g.world.height - h / zoom, p.y - h / zoom / 2));
     ctx.clearRect(0, 0, w, h); ctx.save(); ctx.scale(zoom, zoom); ctx.translate(-camera.x, -camera.y);
     drawGround(ctx);
-    for(const o of g.scenery){sprite(8,o.x,o.y,90,90,0,o.hp>0?1:.3);}
-    sprite(10, g.base.x, g.base.y, 320); ring(g.base.x, g.base.y, 42, '#c5dfb377'); label('FRIGATE / DROP-OFF', g.base.x, g.base.y + 60, '#ceebbb');
+    for(const o of g.scenery){ctx.save();ctx.globalAlpha=o.hp>0?1:.3;DesertArt.frame(ctx,'buildings',[16,384,80,64],o.x,o.y,.75);ctx.restore();}
+    DesertArt.frame(ctx,'allies',[16,16,240,160],g.base.x,g.base.y,.85); ring(g.base.x, g.base.y, 42, '#c5dfb377'); label('FRIGATE / DROP-OFF', g.base.x, g.base.y + 80, '#ceebbb');
     for (const s of g.supplies) if (!s.used&&!s.hidden) { sprite(5, s.x, s.y, 72); label(s.kind.toUpperCase(), s.x, s.y + 23, '#c7e8b2'); }
     for (const zone of [...g.zones, ...(g.oilZone?[g.oilZone]:[]), ...(g.flags.agentEntered?[]:g.agentZone?[g.agentZone]:[]), ...(g.embassy?[g.embassy]:[]), ...(g.palaceZone&&!g.flags.palaceEntered?[g.palaceZone]:[])]) {
       if ((zone.kind==='agent' && !g.flags.trapdoorOpen) || (zone.kind==='palace' && g.stage<6)) continue;
       ring(zone.x,zone.y,42,'#abc98c');sprite(3,zone.x,zone.y,100);label(zone.label,zone.x,zone.y+35,'#d1e8ac');
     }
-    for (const person of g.people) if (DesertCampaigns.waiting(person)) {
-      sprite(4,person.x,person.y,32,44);
+    for (const person of g.people) if (!person.rescued&&!person.dead&&!person.hidden) {
+      DesertArt.person(ctx,person.x,person.y,g.time,person.role);
+      if(person.captive){DesertArt.person(ctx,person.x-18,person.y,g.time,'soldier');DesertArt.person(ctx,person.x+18,person.y,g.time,'soldier');label('COPILOT CAPTIVE — HOLD FIRE',person.x,person.y-20,'#ffad77');}
       if(distance(p,person)<100)label(person.role.toUpperCase(),person.x,person.y+18,'#f4dd8b');
       if(person.expires)label(Math.max(0,Math.ceil(person.expires-g.time))+'s',person.x,person.y-20,'#ffad77');
     }
@@ -115,8 +124,17 @@
     for(const tank of g.oilTanks||[]){prop('oil',tank.x,tank.y,tank);label('OIL '+Math.max(0,Math.ceil(tank.hp)),tank.x,tank.y+60);}
     for (const e of g.enemies) {
       if(e.hidden)continue;
+      ctx.save();if(e.hp<=0){ctx.globalAlpha=.45;ctx.filter='grayscale(1) brightness(.4)';}
+      const original=DesertArt.object(ctx,e,g.time);ctx.restore();
+      if(original){
+        if(e.hp>0){label(e.occupied?'HOLD FIRE: COPILOT ABOARD':(e.civilian?'CIVILIAN':e.weapon||e.kind).toUpperCase(),e.x,e.y+40,e.civilian?'#b6dca0':'#ffd9b0');
+          if(e.hp<e.maxHp){ctx.fillStyle='#271e19';ctx.fillRect(e.x-16,e.y-33,32,4);ctx.fillStyle='#f4a34e';ctx.fillRect(e.x-16,e.y-33,32*Math.max(0,e.hp)/e.maxHp,4);}
+          if(g.targetId===e.id)ring(e.x,e.y,28,'#d35939');
+          if(e.deadline)label(Math.ceil(e.deadline-g.time)+'s TO LAUNCH',e.x,e.y-45,'#ff8664');
+        }continue;
+      }
       const icon = (e.weapon==='chopper'?0:e.weapon==='speedboat'?10:['ak47','aphid'].includes(e.weapon)?4:undefined) ?? {radar:1,tank:2,power:6,airfield:7,command:8,scud:9,plant:11,prison:8,bunker:8,chemical:6,palace:8,tower:1,cache:8}[e.kind];
-      if(icon===undefined){prop(e.kind,e.x,e.y,e);if(e.hp>0)label(e.civilian?'CIVILIAN':e.kind.toUpperCase(),e.x,e.y+40,e.civilian?'#b6dca0':'#ffd9b0');if(e.deadline&&e.hp>0)label(Math.ceil(e.deadline-g.time)+'s TO LAUNCH',e.x,e.y-40,'#ff8664');continue;}
+      if(icon===undefined){prop(e.kind,e.x,e.y,e);if(e.hp>0)label(e.occupied?'HOLD FIRE: COPILOT ABOARD':e.civilian?'CIVILIAN':e.kind.toUpperCase(),e.x,e.y+40,e.civilian?'#b6dca0':'#ffd9b0');if(e.deadline&&e.hp>0)label(Math.ceil(e.deadline-g.time)+'s TO LAUNCH',e.x,e.y-40,'#ff8664');continue;}
       if (e.hp <= 0) { ctx.save(); ctx.filter = 'grayscale(1) brightness(.4)'; sprite(icon, e.x, e.y, e.kind !== 'tank' ? 155 : 98, undefined, 0, .6); ctx.restore(); continue; }
       sprite(icon, e.x, e.y, e.kind !== 'tank' ? 155 : 98, undefined, e.kind === 'tank' ? (e.heading||0) + Math.PI / 2 : 0);
       label((e.weapon||e.kind).toUpperCase(),e.x,e.y+39,'#ffd9b0');
@@ -129,8 +147,7 @@
     ctx.save(); ctx.translate(p.x + 10, p.y + 15); ctx.rotate(p.angle + Math.PI / 2); ctx.fillStyle = '#1b291d45'; ctx.beginPath(); ctx.ellipse(0, 0, 9, 22, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
     const bob = reduced ? 0 : Math.sin(g.time * 3) * 2;
     if (g.winch > 0) { ctx.strokeStyle = '#f5df9b'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(p.x, p.y - 10); ctx.lineTo(p.x, p.y + 40); ctx.stroke(); ring(p.x, p.y, 45, '#f5c27a'); ctx.strokeStyle = '#fff3ce'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(p.x, p.y, 45, -Math.PI / 2, -Math.PI / 2 + g.winch / (g.winchDuration||1) * Math.PI * 2); ctx.stroke(); }
-    sprite(0, p.x, p.y - 8 + bob, 135, 155, p.angle + Math.PI / 2);
-    ctx.save(); ctx.translate(p.x, p.y - 10 + bob); ctx.rotate(reduced ? .5 : g.time * 39); ctx.strokeStyle = '#172119c9'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-26, 0); ctx.lineTo(26, 0); ctx.moveTo(0, -26); ctx.lineTo(0, 26); ctx.stroke(); ctx.restore();
+    DesertArt.apache(ctx,p.x,p.y-8+bob,p.angle,reduced?0:g.time);
     // Direction marker keeps the next objective discoverable when it is offscreen.
     const objective = nextObjective(g);
     ctx.restore();
@@ -138,9 +155,15 @@
   }
   // Small mission-specific props use the same restricted desert palette as the sprite atlas.
   function prop(kind,x,y,e={}) {
+    if(DesertArt.object(ctx,{...e,kind,x,y},g.time))return;
     ctx.save();ctx.translate(Math.round(x),Math.round(y));ctx.scale(.45,.45);if(e.hp<=0){ctx.globalAlpha=.45;ctx.filter='grayscale(1) brightness(.5)';}
     const rect=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
-    if(kind==='bus'||kind==='truck') {
+    if(kind==='atv') {
+      ctx.rotate(e.heading||0);rect(-46,-28,88,12,'#202725');rect(-46,16,88,12,'#202725');
+      rect(-43,-22,85,44,'#798068');rect(-30,-17,61,33,'#aaa983');rect(20,-13,13,26,'#364f55');
+      rect(-18,-12,29,24,'#c8bea0');rect(-7,-12,5,24,'#9e4139');
+      for(let i=-40;i<36;i+=13){rect(i,-27,7,8,'#525a4b');rect(i,19,7,8,'#525a4b');}
+    } else if(kind==='bus'||kind==='truck') {
       rect(-53,-22,106,49,'#332c25');rect(-49,-27,98,42,kind==='bus'?'#c4a44d':'#6b7560');rect(-43,-31,84,9,'#e3c275');
       for(let i=-40;i<40;i+=17)rect(i,-17,12,15,'#405b63');rect(-38,15,18,12,'#232a28');rect(26,15,18,12,'#232a28');
       if(kind==='truck'){rect(-50,-25,58,34,'#b4b5a0');for(let i=-45;i<0;i+=16){rect(i,-20,9,25,'#d9d2ae');rect(i,-9,9,5,e.civilian?'#6c8852':'#b04837');}}
@@ -162,6 +185,7 @@
   }
   let ground=null,groundLevel=-1;
   function buildGround(){
+    if(ready){ground=DesertArt.terrain(g.level);groundLevel=g.level;return;}
     const m=g.world;ground=document.createElement('canvas');ground.width=m.width/2;ground.height=m.height/2;
     const c=ground.getContext('2d');c.scale(.5,.5);c.fillStyle=m.color;c.fillRect(0,0,m.width,m.height);
     let seed=71+g.level;const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
@@ -220,11 +244,11 @@
     drawMap(mini); if(mapOpen) drawMap(large);
   }
   function frame(now) {
-    const dt=Math.min((now-last)/1000,.05);last=now;
-    if(mode==='playing'&&!mapOpen) { update(g,input(),dt);pulse={};g.events.forEach(beep);if(g.status!=='playing')setMode(g.status); }
+    const dt=Math.max(0,Math.min((now-last)/1000,.25));last=now;
+    if(mode==='playing'&&!mapOpen) { const before=g.time;advance(g,input(),dt);if(g.time>before)pulse={};g.events.forEach(beep);if(g.status!=='playing')setMode(g.status); }
     if(rotorGain)rotorGain.gain.setTargetAtTime(sound&&mode==='playing'&&!mapOpen?.009:0,audio.currentTime,.08);
     draw();hudTime+=dt;if(hudTime>.1){refreshHUD();hudTime=0;}requestAnimationFrame(frame);
   }
-  atlas.decode().then(()=>{ready=true;$('launch').disabled=false;$('launch').textContent='Launch operation';refreshHUD();}).catch(()=>{$('overlay-copy').textContent='The flight artwork could not load. Reload the page, or extract the complete download before opening index.html.';$('launch').textContent='Artwork unavailable';});
+  Promise.all([atlas.decode(),DesertArt.ready]).then(()=>{ready=true;groundLevel=-1;$('launch').disabled=false;$('launch').textContent='Launch operation';refreshHUD();}).catch(()=>{$('overlay-copy').textContent='The flight artwork could not load. Reload the page, or extract the complete download before opening index.html.';$('launch').textContent='Artwork unavailable';});
   resize();setMode('briefing');refreshHUD();requestAnimationFrame(frame);
 })();

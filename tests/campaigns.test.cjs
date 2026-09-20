@@ -30,7 +30,22 @@ test('bus waits for route clearance and follows escort to safety',()=>{const g=c
 test('bus destruction fails',()=>{const g=createGame(2);g.bus.active=true;g.bus.hp=0;update(g);assert.equal(g.status,'lost');});
 test('six commandos required for one-use LZ; later orders hidden',()=>{const g=createGame(3);assert.equal(g.enemies.find(e=>e.group==='shelters').hidden,true);capture(g,g.people.find(h=>h.role==='commando'));C.unload(g,g.oilZone);assert.equal(g.status,'lost');const h=createGame(3);h.people.filter(p=>p.role==='commando').forEach(p=>capture(h,p));C.unload(h,h.oilZone);assert.equal(h.flags.commandos,6);assert.equal(h.player.crew,0);});
 test('civilian truck and essential personnel losses fail',()=>{const g=createGame(3);g.enemies.filter(e=>e.civilian).forEach(e=>destroy(g,e));assert.equal(g.status,'lost');const h=createGame(3);C.killPerson(h,h.people.find(p=>p.role==='commando'));assert.equal(h.status,'lost');});
-test('palace trap, bomber deadline, and copilot recovery',()=>{const g=createGame(3);destroy(g,g.enemies.find(e=>e.group==='palace'));hover(g,g.palaceZone);update(g);const b=g.enemies.find(e=>e.kind==='bomber');assert.equal(b.hidden,false);assert.ok(b.deadline);assert.equal(g.copilot,false);b.hp=900;C.onHit(g,b,100);const h=g.people.find(h=>h.role==='copilot');assert.ok(h);capture(g,h);assert.equal(g.copilot,true);const f=createGame(3),plane=f.enemies.find(e=>e.kind==='bomber');plane.hidden=false;plane.deadline=1;f.time=2;update(f);assert.equal(f.status,'lost');});
+test('palace vehicle, escorted boarding, bomber breach and copilot recovery',()=>{
+  const g=createGame(3);g.enemies.filter(e=>e.weapon).forEach(e=>e.hp=0);
+  destroy(g,g.enemies.find(e=>e.group==='palace'));hover(g,g.palaceZone);update(g);
+  const vehicle=g.enemies.find(e=>e.kind==='atv'),b=g.enemies.find(e=>e.kind==='bomber');
+  assert.equal(vehicle.hidden,false);assert.equal(vehicle.occupied,true);assert.equal(b.hidden,true);assert.equal(b.deadline,undefined);assert.equal(g.copilot,false);
+  const start=vehicle.x;C.tick(g,1);assert.notEqual(vehicle.x,start);
+  for(let n=0;n<1600&&!g.flags.bomberBoarded;n++){g.time+=.05;C.tick(g,.05);}
+  assert.equal(vehicle.occupied,false);assert.equal(b.hidden,false);assert.ok(b.deadline);
+  const captive=g.people.find(h=>h.role==='copilot');assert.equal(captive.hidden,true);
+  destroy(g,vehicle);b.hp=900;C.onHit(g,b,100);assert.equal(captive.captive,false);assert.equal(captive.hidden,false);
+  capture(g,captive);assert.equal(g.copilot,true);assert.equal(g.people.filter(p=>p.role==='copilot').length,1);
+  const f=createGame(3),plane=f.enemies.find(e=>e.kind==='bomber');plane.hidden=false;plane.deadline=1;f.time=2;update(f);assert.equal(f.status,'lost');
+});
+test('shooting the occupied palace ATV fails the rescue',()=>{
+  const g=createGame(3),e=g.enemies.find(e=>e.kind==='atv');destroy(g,e);assert.equal(g.status,'lost');assert.match(g.message,/still inside/);
+});
 for(const mode of ['standard','story'])for(let level=0;level<4;level++)test(`full playthrough: campaign ${level+1}, ${mode}`,()=>{
   const g=createGame(level,mode);
   for(let n=0;n<150000&&g.status==='playing';n++)update(g,pilot(g,objective),1/60);
@@ -94,4 +109,27 @@ test('AAA does not inherit radar damage or range bonuses',()=>{
 });
 test('breached yacht still collides and does not release a second hostage stream',()=>{
   const g=createGame(2),y=g.enemies.find(e=>e.kind==='yacht');destroy(g,y);hover(g,y);update(g);assert.equal(g.player.armor,590);assert.equal(g.flags.hostages,1);assert.equal(g.flags.yachtOpen,true);
+});
+
+test('civilian destruction penalizes score; scenery and cache covers award no target points',()=>{
+  const g=createGame(3,'standard','above',{score:2000});
+  C.scoreObject(g,g.enemies.find(e=>e.civilian&&e.kind==='truck'));assert.equal(g.score,1500);
+  C.scoreObject(g,g.scenery[0]);C.scoreObject(g,g.enemies.find(e=>e.cache));assert.equal(g.score,1500);
+  C.scoreObject(g,g.enemies.find(e=>e.weapon));assert.equal(g.score,1850);
+  C.score(g,'penalties',-9999);assert.equal(g.score,0);assert.equal(g.startScore+Object.values(g.scoreLog).reduce((a,b)=>a+b,0),0);
+});
+test('rescues beyond the required POW quota earn one bonus each on delivery',()=>{
+  const g=createGame(1);g.enemies.filter(e=>e.group==='pow').forEach(e=>destroy(g,e));
+  const pow=g.people.filter(p=>p.role==='POW');pow.slice(0,14).forEach(p=>p.delivered=true);
+  pow.slice(14).forEach(p=>capture(g,p));C.unload(g,g.base);assert.equal(g.scoreLog.bonus,500);const score=g.score;C.unload(g,g.base);assert.equal(g.score,score);
+});
+test('render rate does not change flight, fuel or weapon cadence',()=>{
+  const {advance}=require('../src/simulation');const runs=[30,60,144].map(fps=>{
+    const g=createGame();g.enemies=[];g.scenery=[];g.people=[];g.supplies=[];
+    for(let i=0;i<fps*10;i++)advance(g,{right:true,up:true,fire:true,rocket:true},1/fps);
+    return [g.time,g.player.x,g.player.y,g.player.fuel,g.player.ammo,g.player.rockets];
+  });for(const run of runs.slice(1))run.forEach((v,i)=>assert.ok(Math.abs(v-runs[0][i])<1e-7));
+});
+test('nuclear complex has two radar controllers and five Crotales; three hidden lives',()=>{
+  const g=createGame(3);assert.equal(g.enemies.filter(e=>e.group==='nuclear-radar').length,2);assert.equal(g.enemies.filter(e=>e.weapon==='crotale'&&e.alertGroup==='nuclear-radar').length,5);assert.equal(g.supplies.filter(s=>s.kind==='life'&&s.hidden).length,3);
 });

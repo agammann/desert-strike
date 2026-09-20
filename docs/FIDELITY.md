@@ -1,6 +1,6 @@
 # Genesis fidelity ledger
 
-The reference is **Desert Strike: Return to the Gulf for Genesis / Mega Drive (1992)**. This v0.4.0 recreation runs on its own JavaScript engine. It does not load a ROM or emulate the original executable. A successful campaign test does not establish identical difficulty or frame timing.
+The reference is **Desert Strike: Return to the Gulf for Genesis / Mega Drive (1992)**. This v0.5.0 recreation runs on its own JavaScript engine. It does not load a ROM or emulate the original executable. A successful campaign test does not establish identical difficulty or frame timing.
 
 ## Documented values
 
@@ -25,7 +25,7 @@ The manual describes radar range alerts, power/aim alerts and increased damage, 
 
 ## Campaign geography
 
-DarkWolf's [Genesis maps on VGMaps](https://www.vgmaps.com/Atlas/Genesis/) were inspected as visual references. Their background-image dimensions are verified; coastlines, roads and major landmarks were then manually reconstructed as coordinates. The original reference images are **not** distributed or loaded by the game.
+DarkWolf's [Genesis maps on VGMaps](https://www.vgmaps.com/Atlas/Genesis/) supply the layout reference. Version 0.5 matches each 512 × 512 region against the 25 original DOS terrain tiles supplied through The Spriters Resource. A campaign-specific palette is derived from corresponding pixels. The full reference map images are **not** distributed or loaded by the game.
 
 | Campaign | Reference dimensions | Reconstructed features |
 | :--- | :--- | :--- |
@@ -34,11 +34,13 @@ DarkWolf's [Genesis maps on VGMaps](https://www.vgmaps.com/Atlas/Genesis/) were 
 | [Embassy City reference](https://www.vgmaps.com/Atlas/Genesis/DesertStrike-ReturnToTheGulf-Campaign3.png) | 6144 × 4096 | City road network, northwest biological facilities, embassy, eastern power station, yacht offshore |
 | [Nuclear Storm reference](https://www.vgmaps.com/Atlas/Genesis/DesertStrike-ReturnToTheGulf-Campaign4.png) | 6144 × 4096 | Night palette, northwest runway, oil field, palace, northeast nuclear complex |
 
-These dimensions match the map images, not a verified internal coordinate system. Smaller props and city blocks are sparse. Enemy and resource positions, hidden-object locations, coast vertices, landing zones and bus waypoints remain approximate. The background maps do not establish every dynamic actor's location. The renderer keeps newly drawn pixel sprites and reconstructed terrain rather than original tiles and animations.
+These dimensions match the reference images, not a verified internal coordinate system. `src/terrain-data.js` contains the selected tile grids, palette maps and a water boundary sampled every 16 pixels. On a four-pixel sampling grid, reconstructed terrain agreed with reference pixels at 96.69%, 97.03%, 96.04% and 95.95% respectively. The comparison includes reference buildings that are not part of the terrain tiles, so **these are terrain-comparison statistics, not game-fidelity percentages**. The least separated first/second tile candidate differs by 0.78 percentage points; some populated blocks remain ambiguous.
+
+Building, enemy, resource, hidden-object and landing-zone coordinates remain manually placed estimates. Smaller buildings and some encounters are absent. The renderer now uses original DOS artwork, with directional helicopter frames and distinct vehicle bodies/turrets. This does not establish identical Genesis sprites, animation cadence or collision shapes.
 
 ## Gameplay and difficulty changes
 
-- Four full-size reference layouts replace the earlier shared 2400 × 2400 terrain. The closer camera and longer journeys make map reading and fuel planning more important.
+- Four full-size tile layouts replace the earlier procedural terrain. The closer camera and longer journeys make map reading and fuel planning more important.
 - Mobile ground defenses pursue locally; boats stay on water, and helicopters can cross the coast. Turrets rotate rather than instantly firing in every direction. Their speeds, ranges, pursuit limits and tracking rates are estimates.
 - Supplies are finite and scattered. Hidden caches must be destroyed before their pickups can be recovered. Rescue remains an alternative way to restore armor.
 - Collidable buildings and scenery block the aircraft and inflict armor damage. The manual specifies 10 damage to each participant and a temporary loss of control (printed pp. 12–13). Collision shapes and the 0.35-second interruption are estimates.
@@ -63,7 +65,15 @@ The printed page numbers below refer to the original Genesis manual linked above
 
 Copilot numeric settings (person pickup seconds / forward aim cone in radians): X-Man 1.6 / 0.12, Aussie 2.2 / 0.24, Tracker 2.8 / 0.38, Mr. D 3.2 / 0.08, Jake 1.4 / 0.42. Without a copilot, pickup takes 3.2 seconds and aim assistance is unavailable. The quick winch uses 0.5 seconds. These values are openly recorded for later calibration. The [roster reference](https://strike-series.fandom.com/wiki/Co-Pilots) is secondary; the manual is the primary evidence for the selection/rescue system.
 
-The illustrated [firsthand Mega Drive playthrough](https://shugames.blogspot.com/2015/10/guia-completo-desert-strike-mega-drive.html) describes helicopter attacks during embassy boarding and armor along the escort route. Those events are now present. It also describes the palace escape vehicle, which remains missing. An attempted Genesis video reference could not play in this environment; no frame-by-frame video comparison is claimed.
+The illustrated [firsthand Mega Drive playthrough](https://shugames.blogspot.com/2015/10/guia-completo-desert-strike-mega-drive.html) describes helicopter attacks during embassy boarding and armor along the escort route. Those events are now present. The palace escape vehicle now has a travel phase, escorted copilot transfer, bomber boarding, breach and rescue. The occupied vehicle must not be destroyed. Its route, 70-unit/s driving speed, 22-unit/s escort walk and 300 armor are reconstruction choices. An attempted Genesis video reference could not play in this environment; no frame-by-frame video comparison is claimed.
+
+## Timing and scoring in v0.5.0
+
+Browser rendering is decoupled from simulation: gameplay advances at 60 fixed steps per second. Regression runs at 30, 60 and 144 render frames per second produce identical positions, fuel consumption and weapon counts for the same held inputs. This removes display-rate drift; it does not measure the original console's flight coefficients.
+
+The manual (printed p. 13) describes bonus rescues beyond a mission quota and deductions for friendly/civilian destruction. Both are implemented. The numerical table remains custom: 350 per enemy target, 150 per pickup, 500 per delivery, 250 per extra rescue above its quota, and a 500-point penalty for personnel/civilian/supply losses (clamped at zero total score). Cache covers and scenery award no target score. Enemy fire destroying a supply crate does not deduct player points. A completion report itemizes target, rescue, bonus and penalty totals. This is **not the original numeric score table**.
+
+Original music accompanies the title, selected briefing, success, failure and ending screens. Flight uses synthesized rotor/weapon effects. Source credits and asset scope are in [THIRD_PARTY.md](../THIRD_PARTY.md).
 
 ## Still estimated or missing
 
@@ -73,9 +83,9 @@ The illustrated [firsthand Mega Drive playthrough](https://shugames.blogspot.com
 | Flight and weapons | Speed, acceleration, turning, projectile speeds/ranges, targeting, building armor and player firing cadence are custom values. |
 | Fuel | Standard consumes 0.36 units per second over land; Relaxed uses 0.18. These rates are not measurements of the original. |
 | Timers | SCUD 100/160 s, silo 30/55 s, hostage 100/150 s, bomber 150/240 s in Standard/Relaxed. All are reconstruction settings. |
-| Placement | Guards, supplies and individual objectives have approximate coordinates and counts; not every original object is present. Several enemy classes share a visual sprite. |
-| Missions | Thresholds and chains follow the manual and firsthand guides, but cinematic events are condensed. The palace escape vehicle is represented by the bomber reveal. |
-| Presentation | Original cutscenes, music, exact animation frames, passwords and original scoring are not reproduced. Browser checkpoints replace password entry. No mid-campaign save. |
+| Placement | Guards, supplies and individual objectives have approximate coordinates and counts; not every original object is present. Vehicles now use distinct source sprite frames; their exact Genesis equivalents are unverified. |
+| Missions | The palace escape and bomber transfer are implemented; path, protection rules and event timing remain unmeasured. Other cinematic events are condensed. |
+| Presentation | Original DOS sprites and eight Mega Drive music tracks are included. Complete cutscenes, every animation state and original passwords are absent. Browser checkpoints replace password entry. No mid-campaign save. |
 | Copilots | Roster and differing roles are implemented; numeric aim cones and pickup durations are estimates, not extracted values. |
 | New mission events | Boarding one official per 1.5 seconds, two air attacks and two ambush tanks reconstruct the embassy sequence. Their exact counts, placement and timing are unmeasured. |
 

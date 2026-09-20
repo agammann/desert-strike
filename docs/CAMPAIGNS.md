@@ -1,6 +1,6 @@
 # Campaign guide and fidelity notes
 
-Version 0.4 implements **27 mission objectives in the original four-campaign structure**. The mission roles, intelligence dependencies, rescues, and major set pieces follow the 1992 game. It adds four maps at the Genesis reference dimensions and documented enemy weapon values. Placements, physics and balance remain a reconstruction; this is not a verified one-to-one port.
+Version 0.5 implements **27 mission objectives in the original four-campaign structure**. The mission roles, intelligence dependencies, rescues, and major set pieces follow the 1992 game. It adds four maps at the Genesis reference dimensions and documented enemy weapon values. Placements, physics and balance remain a reconstruction; this is not a verified one-to-one port.
 
 The numbered mission list recommends the original order. In campaigns 1–3, visible objectives can be tackled early; intelligence still gates hidden targets. Nuclear Storm reveals later assignments as earlier ones finish. After completing a campaign's objectives, hover at the frigate to finish.
 
@@ -52,10 +52,10 @@ The bus moves when the helicopter is within 340 world units but more than 65 uni
 | 2. Oil spills | Shoot the small ends of three pipes to seal the leaks. |
 | 3. Bomb shelters | Breach four shelters and deliver at least 15 of 16 civilians. |
 | 4. Bomb parts | Destroy five trucks carrying red-marked bomb cargo. Preserve the green-marked civilian trucks. |
-| 5. Nuclear plant | Destroy the plant and two towers; capture the scientist. |
+| 5. Nuclear plant | Disable two optional radars, defeat the five Crotales, destroy the plant and two towers, and capture the scientist. |
 | 6. Power station | Disable the palace's power station. |
 | 7. Presidential palace | Breach the palace and hover at its entrance. The copilot enters and is captured. |
-| 8. Nuclear bomber | Intercept before takeoff. Partway through the attack, stop firing and recover the escaping copilot. Destroy the bomber, then return to the frigate. |
+| 8. Nuclear bomber | Follow the occupied ATV without shooting it. Once your copilot disembarks, destroy the empty vehicle. Breach the bomber, rescue the copilot, destroy the plane before takeoff, and return. |
 
 Oil storage takes damage while enemy tanks survive, and from stray fire. Losing two storage tanks fails the mission. Landing a partial commando squad, losing an essential person, destroying two civilian trucks, or allowing bomber takeoff also fails.
 
@@ -65,9 +65,9 @@ Oil storage takes damage while enemy tanks survive, and from stray fire. Losing 
 
 **Map and combat foundation:** four separate maps at the reference image dimensions, reconstructed roads/coasts/landmarks, a longer embassy escort route, finite scattered supplies, hidden cache pickups, building collisions, strafing, local alert zones, distinct ground/air/boat behaviors, and enemy armor/damage/firing intervals from the Genesis manual. Standard / With Momentum is now the default.
 
-**Reconstructed rather than exact:** road/coast vertices, building and defense placement, scenery density, speed, aiming, enemy AI, scoring, weapon ranges, fuel rate, alert multipliers, escort waypoints, and timer durations. Ground infiltration is represented by gameplay events rather than original cutscenes. The original palace escape vehicle is condensed into the bomber reveal. Original passwords, music and mid-campaign saving are absent. Copilot selection, the Valdez unlock and a browser checkpoint between campaigns are implemented. Copilot assistance values and boarding/ambush timings are estimates. The **[fidelity ledger](FIDELITY.md)** separates documented values from estimates and lists the map references.
+**Reconstructed rather than exact:** building and defense placement, scenery density, speed, aiming, enemy AI, scoring, weapon ranges, fuel rate, alert multipliers, escort waypoints, and timer durations. Ground infiltration is represented by gameplay events rather than original cutscenes. The palace ATV, escorted boarding and bomber breach are separate phases; their path and timing are estimates. Original briefing/result music is included. Original passwords and mid-campaign saving are absent. Copilot selection, the Valdez unlock and a browser checkpoint between campaigns are implemented. Copilot assistance values and boarding/ambush timings are estimates. The **[fidelity ledger](FIDELITY.md)** separates documented values from estimates and lists the map references.
 
-**Timer settings in this version:** SCUDs 100 seconds Standard / 160 Relaxed after capture; silos 30 / 55 after exposure; hostages 100 / 150 after entering the water; bomber 150 / 240 after the palace trap. These are tested recreation settings, not measured original timings. Relaxed mode additionally reduces damage and fuel use and restores supplies at the frigate.
+**Timer settings in this version:** SCUDs 100 seconds Standard / 160 Relaxed after capture; silos 30 / 55 after exposure; hostages 100 / 150 after entering the water; bomber 150 / 240 after the escorted copilot boards the bomber. These are tested recreation settings, not measured original timings. Relaxed mode additionally reduces damage and fuel use and restores supplies at the frigate.
 
 **Corrected in v0.4.0:** one command center is sufficient; the spy compound has three buildings; only the first Nuclear Storm assignment appears initially; collisions inflict 10 damage on both objects and interrupt steering; fuel warnings repeat every two units below 14 and armor warns at 125. Tactical-map categories, hidden fuel/ammunition, copilot choice/Valdez rescue, and embassy boarding/ambush events are added.
 
@@ -77,4 +77,4 @@ Oil storage takes damage while enemy tanks survive, and from stray fire. Losing 
 - [Matt Keller's Genesis playthrough guide](https://gamefaqs.gamespot.com/genesis/366850-desert-strike-return-to-the-gulf/faqs/20312): the guide identifies Sega Mega Drive. Used to cross-check the first campaign's airfield and agent sequence.
 - [Cosmão's illustrated Mega Drive playthrough](https://shugames.blogspot.com/2015/10/guia-completo-desert-strike-mega-drive.html): firsthand playthrough covering later campaigns and the palace/bomber ending. Where guide prose conflicts with the original manual, the manual takes priority. Thresholds and layout details that have not been independently measured against original hardware remain reconstruction choices.
 
-No ROM, emulator, original executable, extracted game assets, or third-party game engine is included.
+No ROM, emulator, original executable or third-party game engine is included. Original DOS sprite sheets and Mega Drive music are included; see [THIRD_PARTY.md](../THIRD_PARTY.md).

@@ -22,7 +22,12 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Desert-Strike-offline
-          path: dist/Desert-Strike.html
+          path: |
+            dist/Desert-Strike.html
+            Play.cmd
+            OFFLINE.txt
+            LICENSE
+            THIRD_PARTY.md
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request'
         with:

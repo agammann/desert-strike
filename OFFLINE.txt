@@ -25,6 +25,10 @@ Follow the numbered mission briefing through 27 objectives in four campaigns.
 Capture intelligence to reveal targets. Watch missile and rescue countdowns.
 Protect embassy officials while boarding, clear the gate, and escort the bus.
 Watch for helicopter reinforcements and the armor ambush.
+At the palace, follow the occupied ATV and hold fire until the copilot exits.
+Destroy the empty vehicle, breach the bomber, rescue him, then finish the plane.
+Enable Sound for original briefing/result music and in-flight effects.
+See THIRD_PARTY.md for artwork and music credits and rights information.
 After all required missions are complete, hover at the frigate to finish.
 A completed operation saves the next campaign and rounded score in this
 browser when storage is available. Continue operation restores this checkpoint.
