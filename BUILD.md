@@ -9,7 +9,7 @@ node --test tests/campaigns.test.cjs
 node scripts/build.mjs
 ```
 
-Open `dist/Desert-Strike.html`. The builder embeds the two sprite/terrain images, CSS, and JavaScript into a single file. `dist/index.html` is the equivalent GitHub Pages entry point. You may also open the source `index.html` directly while keeping its `src/` and `assets/` folders beside it.
+Open `dist/Desert-Strike.html`. The builder embeds the sprite atlas, map data, CSS, and JavaScript into a single file. `dist/index.html` is the equivalent GitHub Pages entry point. You may also open the source `index.html` directly while keeping its `src/` and `assets/` folders beside it.
 
 ## Development
 
@@ -21,11 +21,12 @@ Open `http://127.0.0.1:4173`. The server binds only to loopback. Press Ctrl+C to
 
 | File | Responsibility |
 | :--- | :--- |
+| `src/reference.js` | Weapon table, map geometry, landmark placements, defenses and supply distribution |
 | `src/campaigns.js` | Mission definitions, intelligence, scripted events, escorts, timers and campaign success/failure |
 | `src/simulation.js` | Flight physics, combat, winch, supplies, damage and lives |
 | `src/game.js` | Canvas rendering, input, audio synthesis, HUD, map, pause and menus |
 | `src/style.css` | Desktop/mobile game interface |
-| `assets/terrain.png` | Shared pixel-art coastal terrain |
+| `assets/terrain.png` | Legacy v0.1/v0.2 terrain artwork; no longer loaded or included in builds |
 | `assets/sprites.png` | Transparent aircraft, building, personnel and supply atlas |
 | `scripts/build.mjs` | Creates the standalone offline and Pages HTML |
 | `tests/campaigns.test.cjs` | Mission transitions, failure cases, resources and eight complete playthroughs |

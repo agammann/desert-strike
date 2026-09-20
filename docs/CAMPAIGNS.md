@@ -1,6 +1,6 @@
 # Campaign guide and fidelity notes
 
-Version 0.2 implements **27 mission objectives in the original four-campaign structure**. The mission roles, intelligence dependencies, rescues, and major set pieces follow the 1992 game. This is a standalone reconstruction with compact, newly authored maps and balance, not a verified one-to-one port.
+Version 0.3 implements **27 mission objectives in the original four-campaign structure**. The mission roles, intelligence dependencies, rescues, and major set pieces follow the 1992 game. It adds four maps at the Genesis reference dimensions and documented enemy weapon values. Placements, physics and balance remain a reconstruction; this is not a verified one-to-one port.
 
 The numbered mission list recommends the original order. In campaigns 1–3, visible objectives can be tackled early; intelligence still gates hidden targets. Nuclear Storm reveals later assignments as earlier ones finish. After completing a campaign's objectives, hover at the frigate to finish.
 
@@ -8,8 +8,8 @@ The numbered mission list recommends the original order. In campaigns 1–3, vis
 
 | Mission | What to do in this version |
 | :--- | :--- |
-| 1. Radar sites | Destroy both radar installations. Active radar extends enemy firing range. |
-| 2. Power station | Cut power; enemy weapons fire less often. Recover the repair crate. |
+| 1. Radar sites | Destroy both radar installations. Active radar extends the range of linked local defenses. |
+| 2. Power station | Cut power to weaken linked defenses' aiming, fire rate and protection. Recover the repair crate. |
 | 3. Airfields | Destroy the hangar, tower and two aircraft at each of two fields. |
 | 4. Command centers | Destroy both centers and capture at least one commander. His intelligence reveals the bunker. |
 | 5. Secret agent | Breach the bunker, hover at LAND, and fight the three reinforcements while the copilot is inside. Winch the agent and copilot, deliver the agent, then return to the frigate. |
@@ -63,7 +63,9 @@ Oil storage takes damage while enemy tanks survive, and from stray fire. Losing 
 
 **Implemented:** the mission sequence above; distinct rescue roles; intelligence reveals; timed launches and drowning; six-passenger capacity; landing-zone delivery and armor recovery; three lives; three weapon inventories; fuel conservation over water; radar/power effects; quick winch; extra-life pickups; ground copilot missions; bus escort; oil protection; civilian truck identification; and bomber interception.
 
-**Reconstructed rather than exact:** map geometry, building and defense placement, number of smaller props, travel distances, movement, aiming, enemy AI, scoring, weapon balance, alert behavior, and all timer durations. Every campaign currently uses the same coastal terrain artwork. Defense vehicles share one behavior; the original's full AAA/Rapier/VDA/ZSU/M48/Crotale roster, air combat, and speedboats are not individually reproduced. Ground infiltration is represented by gameplay events rather than original cutscenes. The original palace escape vehicle is condensed into the bomber reveal. The bus uses a shorter route. Building/terrain collision, copilot selection, passwords, original music, and mid-campaign saving are absent.
+**Added in v0.3.0:** four separate maps at the reference image dimensions, reconstructed roads/coasts/landmarks, a longer embassy escort route, finite scattered supplies, hidden cache pickups, building collisions, strafing, local alert zones, distinct ground/air/boat behaviors, and enemy armor/damage/firing intervals from the Genesis manual. Standard / With Momentum is now the default.
+
+**Reconstructed rather than exact:** road/coast vertices, building and defense placement, scenery density, speed, aiming, enemy AI, scoring, weapon ranges, fuel rate, alert multipliers, escort waypoints, and timer durations. Ground infiltration is represented by gameplay events rather than original cutscenes. The original palace escape vehicle is condensed into the bomber reveal. Copilot selection, passwords, original music, and mid-campaign saving are absent. The **[fidelity ledger](FIDELITY.md)** separates documented values from estimates and lists the map references.
 
 **Timer settings in this version:** SCUDs 100 seconds Standard / 160 Relaxed after capture; silos 30 / 55 after exposure; hostages 100 / 150 after entering the water; bomber 150 / 240 after the palace trap. These are tested recreation settings, not measured original timings. Relaxed mode additionally reduces damage and fuel use and restores supplies at the frigate.
 

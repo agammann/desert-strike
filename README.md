@@ -6,7 +6,7 @@ A standalone recreation of the 1992 helicopter game, built by **agammann** with 
 
 No ROM, emulator, account, installation, or runtime download is needed. The offline release is one self-contained HTML game that opens in a modern browser.
 
-![Desert Strike recreation: pixel-art helicopter, coastal desert, frigate, mission map and aircraft instruments](docs/gameplay.png)
+![Desert Strike recreation: pixel-art helicopter approaching radar defenses, a landing zone, tactical map and aircraft instruments](docs/gameplay.png)
 
 ## Play offline
 
@@ -19,12 +19,13 @@ You can disconnect from the internet before opening the extracted game. Artwork,
 
 ## Controls
 
-The game starts in **Relaxed / From Above** for an easier first flight. Select **Standard / With Momentum** for finite supplies and the original turn-and-thrust approach. **From Cockpit** responds more quickly to the throttle. **From Above** is easier to learn: WASD or arrow keys move in compass directions, and the copilot aims toward nearby targets when firing with J. In From Above mode, moving the mouse lets you aim manually with left click.
+The game starts in **Standard / With Momentum**: finite supplies, documented enemy weapon values, and classic turn-and-thrust controls. **From Cockpit** responds more quickly to the throttle. For an easier first flight, choose **Relaxed / From Above**: WASD or arrow keys move in compass directions, and the copilot aims toward nearby targets when firing with J. In From Above mode, moving the mouse lets you aim manually with left click.
 
 | Control | Action |
 | :--- | :--- |
 | **W / Up**, **S / Down** | Forward / reverse in classic modes; north / south in From Above |
 | **A / Left**, **D / Right** | Turn in classic modes; west / east in From Above |
+| **Shift + A / D** | Strafe without turning in classic modes |
 | **J** or **left click** | Chain gun |
 | **K** or **Space** | Hydra rockets |
 | **L** | Hellfire missile; tracks the nearby selected target |
@@ -43,7 +44,8 @@ Follow the **current mission** and numbered checklist beside the battlefield. Th
 - Capture commanders and scientists to reveal hidden targets. Watch launch countdowns; opening a bunker or capturing a commander can trigger the next event.
 - Stop shooting when people emerge. Hover to winch them aboard. The cabin holds **six**; deliver passengers at a marked **L** landing zone or the **H** frigate.
 - Delivered personnel restore armor: 150 points each in Air Superiority, 100 in later campaigns, up to **600**. Ordinary MIAs are optional; the briefing identifies required rescues.
-- In **Standard**, collect fuel, ammunition and repair crates. The frigate has no free fuel or ammo. Fuel is conserved over water. Quick-winch and extra-life pickups are available.
+- In **Standard**, collect finite fuel, ammunition and repair crates scattered across the map. The frigate has no free fuel or ammo. Fuel is conserved over water. Destroy small cache buildings to expose the quick winch and extra life.
+- Keep clear of buildings: collisions cost armor. Circle mobile defenses, use heavy weapons carefully, and disable radar/power before attacking their protected positions. Enemy classes have different armor, damage, firing intervals, movement and aim.
 - Start with **1,178 gun rounds, 38 Hydras, 8 Hellfires, and three lives**. Aircraft replacement retains passengers and ammunition. Losing every aircraft or failing a critical mission ends the operation.
 - Ground missions temporarily take your copilot away, disabling automatic aiming and missile tracking. Use mouse aim or steer toward the target. For the bus, clear its route and fly beside it.
 - When every required mission is complete, **hover at the frigate** to finish. Continue to the next campaign from the results screen.
@@ -61,9 +63,9 @@ Read **[the campaign guide](docs/CAMPAIGNS.md)** for every objective, rescue thr
 
 ## How close is it to the 1992 game?
 
-Version **0.2.0** reconstructs the original campaign structure and major mission events. It replaces the first release's generic destroy-and-rescue objectives with role-based rescues, intelligence reveals, mission timers, escort behavior and specific failure conditions.
+Version **0.3.0** keeps the 27-mission sequence and rebuilds the campaign geography at the dimensions of the Genesis map references. The four maps now have separate coastlines, road networks, landmarks and palettes, including the final night operation. Longer travel, finite scattered supplies, building collisions, local alert zones, mobile defenses and the manual's enemy armor/damage/firing intervals make route planning and combat more demanding.
 
-It is **not a verified one-to-one port**. Maps are compact original layouts sharing one terrain background. Artwork, audio, physics, enemy behavior, scoring, timers and balance are newly implemented. The original enemy roster, complete maps, cutscenes, palace escape vehicle, copilot selection, passwords, and building collisions are not fully reproduced. There is no mid-campaign save. See the [fidelity notes and reference sources](docs/CAMPAIGNS.md#what-matches-and-what-remains-approximate) for precise boundaries.
+It is **not a verified one-to-one port**. Coastlines, roads, target positions and the escort route are manual approximations. Enemy placement, ranges, flight speed, fuel rate, alert multipliers and mission timers have not been measured against an original-console run. Artwork and audio remain newly made. Cutscenes, the palace escape vehicle, copilot selection and passwords are not reproduced; there is no mid-campaign save. See the **[fidelity ledger](docs/FIDELITY.md)** for the exact values, source links and remaining differences. Passing a playthrough establishes that a campaign is completable, not that its difficulty is identical to the original.
 
 Desert Strike: Return to the Gulf is the title of Electronic Arts' original game. This is an unofficial fan recreation and is not affiliated with or endorsed by Electronic Arts. No original game files are included.
 

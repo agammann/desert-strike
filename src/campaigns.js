@@ -33,7 +33,7 @@
     g.tasks = []; g.stage = 0; g.flags = {}; g.copilot = true; g.passengers = []; g.zones = [];
     g.enemies = []; g.people = []; g.supplies = []; g.deadlines = [];
     g.zones.push({ x: 850, y: 1940, kind: 'lz', label: 'RESCUE LZ' }, { x: 780, y: 680, kind: 'lz', label: 'RESCUE LZ' });
-    // These compact layouts are authored for this recreation, not traced original maps.
+    // Seed mission entities here; reference.js applies the campaign map positions and supplies.
     for (const [x,y] of [[740,1740],[1110,1250],[1840,1990],[830,450],[2050,730],[1520,450],[1660,1530]]) {
       supply(g,x,y,'fuel'); supply(g,x+80,y,'ammo'); supply(g,x+40,y+70,'repair');
     }
@@ -120,7 +120,7 @@
     }
     tell(g, g.tasks[0].hint);
   }
-  function reveal(g, group) { g.enemies.filter(e=>e.group===group).forEach(e=>e.hidden=false); }
+  function reveal(g, group) { g.enemies.filter(e=>e.group===group||e.revealWith===group).forEach(e=>e.hidden=false); }
   function onRescue(g, p) {
     if(p.role==='commander')reveal(g,'agent');
     if(p.role==='scud commander') {
@@ -133,6 +133,7 @@
   }
   function onDestroy(g, e) {
     if(e.release)people(g,e.x,e.y+65,e.release.role,e.release.count,e.release);
+    if(e.cache){const s=g.supplies.find(s=>s.kind===e.cache&&s.hidden);if(s)s.hidden=false;}
     if(e.kind==='power')supply(g,e.x,e.y,'repair');
     if(e.kind==='yacht'){g.flags.yachtOpen=true;g.flags.nextHostage=g.time;g.flags.hostages=0;}
     if(e.civilian && destroyed(g,'decoys')>1)fail(g,'Two civilian trucks destroyed. The operation has failed.');
@@ -176,12 +177,12 @@
     if(g.enemies.some(e=>e.group==='silos'&&e.escaped))fail(g,'A biological missile launched. Retry the operation.');
     if(g.level===0&&destroyed(g,'agent')&&!g.flags.agentEntered&&slow&&dist(p,g.agentZone)<65){
       g.flags.agentEntered=true;g.copilot=false;
-      [[-200,-80],[180,-110],[100,230]].forEach(([x,y])=>enemy(g,g.agentZone.x+x,g.agentZone.y+y,'tank','agent-wave'));
+      [[-120,-90],[140,-90],[120,140]].forEach(([x,y])=>{const e=enemy(g,g.agentZone.x+x,g.agentZone.y+y,'tank','agent-wave');const ref=typeof module!=='undefined'&&module.exports?require('./reference.js'):root.DesertReference;ref.configureEnemy(e,'vda');});
       tell(g,'Copilot inside. Destroy the three reinforcements to secure the extraction.');
     }
     if(g.flags.agentEntered&&!g.flags.agentFree&&destroyed(g,'agent-wave')===3){g.flags.agentFree=true;people(g,g.agentZone.x,g.agentZone.y,'agent',1);people(g,g.agentZone.x+45,g.agentZone.y,'copilot',1);}
     if(g.flags.yachtOpen&&g.flags.hostages<12&&g.time>=g.flags.nextHostage){
-      people(g,360,1570,'hostage',1,{expires:g.time+(g.difficulty==='story'?150:100)});g.flags.hostages++;g.flags.nextHostage=g.time+5;
+      people(g,g.enemies.find(e=>e.kind==='yacht').x+35,g.enemies.find(e=>e.kind==='yacht').y+35,'hostage',1,{expires:g.time+(g.difficulty==='story'?150:100)});g.flags.hostages++;g.flags.nextHostage=g.time+5;
     }
     if(g.level===2){
       if(g.stage===7&&!g.bus.active&&slow&&dist(p,g.embassy)<65){g.bus.active=true;g.copilot=false;tell(g,'Copilot driving. Twelve officials aboard the bus. Clear its route and escort it to the SEAL camp.');}

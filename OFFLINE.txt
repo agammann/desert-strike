@@ -5,8 +5,9 @@ Extract this entire ZIP, then open Desert-Strike.html in a modern browser.
 On Windows you can also double-click Play.cmd.
 No internet, ROM, emulator, installation, or server is required.
 
-Default flight (From Above): WASD or arrows move in compass directions.
-Classic With Momentum mode: W/S forward/reverse, A/D turn.
+Default: Standard difficulty / With Momentum controls.
+W/S forward/reverse, A/D turn; Shift + A/D strafe without turning.
+Optional From Above: WASD or arrows move in compass directions.
 Weapons: J chain gun, K or Space Hydra, L Hellfire.
 Hover over people and supplies to pick them up automatically.
 Deliver passengers at a landing zone (L) or the frigate (H) to repair armor.
@@ -14,6 +15,8 @@ M opens the map and pauses. P or Escape pauses/resumes.
 From Above controls are available in the briefing for easier flying.
 
 Standard mode requires supply pickups for fuel and ammunition.
+Buildings cause collision damage. Disable radar/power to weaken local defenses.
+Quick winch and extra lives are hidden under destructible cache buildings.
 Relaxed mode also resupplies at the frigate.
 Follow the numbered mission briefing through 27 objectives in four campaigns.
 Capture intelligence to reveal targets. Watch missile and rescue countdowns.
