@@ -9,12 +9,16 @@ Default flight (From Above): WASD or arrows move in compass directions.
 Classic With Momentum mode: W/S forward/reverse, A/D turn.
 Weapons: J chain gun, K or Space Hydra, L Hellfire.
 Hover over people and supplies to pick them up automatically.
-Return crew to the frigate (H on the map) to unload and repair armor.
+Deliver passengers at a landing zone (L) or the frigate (H) to repair armor.
 M opens the map and pauses. P or Escape pauses/resumes.
 From Above controls are available in the briefing for easier flying.
 
 Standard mode requires supply pickups for fuel and ammunition.
 Relaxed mode also resupplies at the frigate.
+Follow the numbered mission briefing through 27 objectives in four campaigns.
+Capture intelligence to reveal targets. Watch missile and rescue countdowns.
+Clear the embassy bus route, then fly beside it to escort it to safety.
+After all required missions are complete, hover at the frigate to finish.
 No mid-campaign save: use pause or restart the campaign from its briefing.
 
 This is a newly implemented recreation, not an exact port of the original.

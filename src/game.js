@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const { createGame, update, missions, SIZE, distance } = DesertSim;
+  const { createGame, update, missions, SIZE, distance, objective: nextObjective } = DesertSim;
   const $ = id => document.getElementById(id);
   const canvas = $('game'), ctx = canvas.getContext('2d'), mini = $('minimap').getContext('2d'), large = $('map-large').getContext('2d');
   const terrain = new Image(), atlas = new Image();
@@ -30,13 +30,13 @@
     if (next === 'paused') { $('overlay-kicker').textContent = 'FLIGHT PAUSED'; $('overlay-title').textContent = 'Holding position.'; $('overlay-copy').textContent = 'Your aircraft is safe. Resume when you are ready.'; $('launch').textContent = 'Resume flight'; }
     if (next === 'won' || next === 'lost') {
       $('overlay-kicker').textContent = next === 'won' ? 'OPERATION COMPLETE' : 'OPERATION FAILED';
-      $('overlay-title').textContent = next === 'won' ? 'Everyone is home.' : 'Aircraft lost.';
-      $('overlay-copy').textContent = next === 'won' ? `${g.delivered} crew delivered. Score ${g.score.toLocaleString()}. ${g.level === 3 ? 'All four campaigns are available from the flight briefing.' : 'Your next operation is ready.'}` : g.message;
+      $('overlay-title').textContent = next === 'won' ? 'Operation accomplished.' : 'Operation failed.';
+      $('overlay-copy').textContent = next === 'won' ? `${g.tasks.length} missions completed. ${g.delivered} personnel safe. Score ${g.score.toLocaleString()}. ${g.level === 3 ? 'All four campaigns are available from the flight briefing.' : 'Your next operation is ready.'}` : g.message;
       $('launch').textContent = next === 'won' ? (g.level < 3 ? 'Next operation' : 'Back to briefing') : 'Retry operation';
       $('retry').textContent = 'Back to briefing';
       if (next === 'won') { best = Math.max(best, g.score); try { localStorage.setItem('desert-strike-best', String(best)); } catch {} }
     }
-    if (next === 'briefing') { $('overlay-kicker').textContent = 'FLIGHT BRIEFING'; $('overlay-title').innerHTML = 'Bring everyone<br>home.'; $('overlay-copy').textContent = 'Fly low. Silence the radar network. Winch the stranded crew aboard and return them safely to base.'; $('launch').textContent = ready ? 'Launch operation' : 'Loading flight deck…'; }
+    if (next === 'briefing') { $('overlay-kicker').textContent = 'FLIGHT BRIEFING'; $('overlay-title').innerHTML = 'Bring everyone<br>home.'; $('overlay-copy').textContent = 'Follow the mission briefing. Capture intelligence, protect rescues, manage supplies, and return to the frigate.'; $('launch').textContent = ready ? 'Launch operation' : 'Loading flight deck…'; }
     if (next === 'playing') canvas.focus({ preventScroll: true });
   }
   function start(level = Number($('mission').value)) { g = createGame(level, $('difficulty').value, $('controls').value); $('mission').value = String(level); mapOpen = false; $('big-map').hidden = true; mouse = null; setMode('playing'); refreshHUD(); }
@@ -91,16 +91,25 @@
     if (terrain.complete && terrain.naturalWidth) ctx.drawImage(terrain, 0, 0, SIZE, SIZE); else { ctx.fillStyle = '#b69a62'; ctx.fillRect(0, 0, SIZE, SIZE); }
     sprite(10, g.base.x, g.base.y, 320); ring(g.base.x, g.base.y, 85, '#c5dfb377'); label('FRIGATE / DROP-OFF', g.base.x, g.base.y + 108, '#ceebbb');
     for (const s of g.supplies) if (!s.used) { sprite(5, s.x, s.y, 72); label(s.kind.toUpperCase(), s.x, s.y + 42, '#c7e8b2'); }
-    for (let i = 0; i < g.people.length; i += 2) {
-      const a = g.people[i], b = g.people[i + 1];
-      if (!a.rescued || !b.rescued) { const x = (a.x + b.x) / 2; ring(x, a.y, 65, '#f8a14099'); label('HOVER / WINCH', x, a.y + 62); if (!reduced) { for (let n = 0; n < 5; n++) { const t = (g.time * .35 + n * .19) % 1; ctx.fillStyle = `rgba(224,105,35,${(1 - t) * .25})`; ctx.beginPath(); ctx.arc(x + 30 + t * 25, a.y - 30 - t * 85, 8 + t * 16, 0, Math.PI * 2); ctx.fill(); } } }
+    for (const zone of [...g.zones, ...(g.oilZone?[g.oilZone]:[]), ...(g.flags.agentEntered?[]:g.agentZone?[g.agentZone]:[]), ...(g.embassy?[g.embassy]:[]), ...(g.palaceZone&&!g.flags.palaceEntered?[g.palaceZone]:[])]) {
+      if ((zone.kind==='agent' && !g.enemies.some(e=>e.group==='agent'&&!e.hidden&&e.hp<=0)) || (zone.kind==='palace' && g.stage<6)) continue;
+      ring(zone.x,zone.y,62,'#abc98c');sprite(3,zone.x,zone.y,100);label(zone.label,zone.x,zone.y+65,'#d1e8ac');
     }
-    for (const person of g.people) if (!person.rescued) sprite(4, person.x, person.y, 39, 49);
+    for (const person of g.people) if (DesertCampaigns.waiting(person)) {
+      sprite(4,person.x,person.y,32,44);
+      if(distance(p,person)<250)label(person.role.toUpperCase(),person.x,person.y+32,'#f4dd8b');
+      if(person.expires)label(Math.max(0,Math.ceil(person.expires-g.time))+'s',person.x,person.y-35,'#ffad77');
+    }
+    if(g.bus){prop('bus',g.bus.x,g.bus.y,g.bus);label(g.bus.arrived?'OFFICIALS SAFE':'BUS: 12 OFFICIALS',g.bus.x,g.bus.y+56);}
+    for(const tank of g.oilTanks||[]){prop('oil',tank.x,tank.y,tank);label('OIL '+Math.max(0,Math.ceil(tank.hp)),tank.x,tank.y+60);}
     for (const e of g.enemies) {
-      const icon = {radar:1,tank:2,power:6,airfield:7,command:8,scud:9,plant:11}[e.kind];
+      if(e.hidden)continue;
+      const icon = {radar:1,tank:2,power:6,airfield:7,command:8,scud:9,plant:11,prison:8,bunker:8,chemical:6,palace:8,tower:1}[e.kind];
+      if(icon===undefined){prop(e.kind,e.x,e.y,e);if(e.hp>0)label(e.civilian?'CIVILIAN':e.kind.toUpperCase(),e.x,e.y+68,e.civilian?'#b6dca0':'#ffd9b0');if(e.deadline&&e.hp>0)label(Math.ceil(e.deadline-g.time)+'s TO LAUNCH',e.x,e.y-70,'#ff8664');continue;}
       if (e.hp <= 0) { ctx.save(); ctx.filter = 'grayscale(1) brightness(.4)'; sprite(icon, e.x, e.y, e.kind !== 'tank' ? 155 : 98, undefined, 0, .6); ctx.restore(); continue; }
       sprite(icon, e.x, e.y, e.kind !== 'tank' ? 155 : 98, undefined, e.kind === 'tank' ? Math.atan2(p.y - e.y, p.x - e.x) + Math.PI / 2 : 0);
       if (e.kind !== 'tank') label(e.kind.toUpperCase(), e.x, e.y + 79, '#ffd9b0');
+      if(e.deadline)label(Math.ceil(e.deadline-g.time)+'s TO LAUNCH',e.x,e.y-75,'#ff8664');
       if (g.targetId === e.id) { const r = e.kind !== 'tank' ? 55 : 38; ctx.strokeStyle = '#d35939'; ctx.lineWidth = 2; for (const [sx, sy] of [[-1,-1],[1,-1],[-1,1],[1,1]]) { ctx.beginPath(); ctx.moveTo(e.x + sx * (r - 10), e.y + sy * r); ctx.lineTo(e.x + sx * r, e.y + sy * r); ctx.lineTo(e.x + sx * r, e.y + sy * (r - 10)); ctx.stroke(); } }
       if (e.hp < e.maxHp) { ctx.fillStyle = '#271e19'; ctx.fillRect(e.x - 25, e.y - 52, 50, 4); ctx.fillStyle = '#f4a34e'; ctx.fillRect(e.x - 25, e.y - 52, 50 * Math.max(0, e.hp) / e.maxHp, 4); }
     }
@@ -112,27 +121,57 @@
     sprite(0, p.x, p.y - 16 + bob, 135, 155, p.angle + Math.PI / 2);
     ctx.save(); ctx.translate(p.x, p.y - 21 + bob); ctx.rotate(reduced ? .5 : g.time * 39); ctx.strokeStyle = '#172119c9'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(-58, 0); ctx.lineTo(58, 0); ctx.moveTo(0, -58); ctx.lineTo(0, 58); ctx.stroke(); ctx.restore();
     // Direction marker keeps the next objective discoverable when it is offscreen.
-    const objective = p.crew === 6 || (g.delivered === g.people.length && g.enemies.filter(e => e.kind !== 'tank').every(e => e.hp <= 0)) ? g.base : g.enemies.filter(e => e.kind !== 'tank' && e.hp > 0).sort((a,b) => distance(p,a)-distance(p,b))[0] || g.people.find(e => !e.rescued) || g.base;
+    const objective = nextObjective(g);
     ctx.restore();
     if (mode === 'playing' && objective) { const ox = (objective.x - camera.x) * zoom, oy = (objective.y - camera.y) * zoom; if (ox < 25 || ox > w - 25 || oy < 25 || oy > h - 25) { const a = Math.atan2(oy - h / 2, ox - w / 2), x = Math.max(30, Math.min(w - 30, ox)), y = Math.max(50, Math.min(h - 70, oy)); ctx.save(); ctx.translate(x,y); ctx.rotate(a); ctx.fillStyle = '#fff0c8'; ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(-8,-7); ctx.lineTo(-8,7); ctx.closePath(); ctx.fill(); ctx.restore(); } }
+  }
+  // Small mission-specific props use the same restricted desert palette as the sprite atlas.
+  function prop(kind,x,y,e={}) {
+    ctx.save();ctx.translate(Math.round(x),Math.round(y));if(e.hp<=0){ctx.globalAlpha=.45;ctx.filter='grayscale(1) brightness(.5)';}
+    const rect=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h);};
+    if(kind==='bus'||kind==='truck') {
+      rect(-53,-22,106,49,'#332c25');rect(-49,-27,98,42,kind==='bus'?'#c4a44d':'#6b7560');rect(-43,-31,84,9,'#e3c275');
+      for(let i=-40;i<40;i+=17)rect(i,-17,12,15,'#405b63');rect(-38,15,18,12,'#232a28');rect(26,15,18,12,'#232a28');
+      if(kind==='truck'){rect(-50,-25,58,34,'#b4b5a0');for(let i=-45;i<0;i+=16){rect(i,-20,9,25,'#d9d2ae');rect(i,-9,9,5,e.civilian?'#6c8852':'#b04837');}}
+    } else if(kind==='bomber'||kind==='jet') {
+      const z=kind==='bomber'?1.8:.7;ctx.scale(z,z);rect(-10,-58,20,116,'#c7c6af');rect(-5,-70,10,18,'#dedcca');
+      rect(-62,-5,124,15,'#9d9e8c');rect(-44,-14,88,16,'#b9bba5');rect(-30,42,60,10,'#9d9e8c');rect(-6,-43,12,15,'#3b5660');
+      rect(-33,-16,10,32,'#676d64');rect(23,-16,10,32,'#676d64');
+    } else if(kind==='yacht') {
+      rect(-70,-36,140,68,'#5a706e');rect(-62,-44,124,74,'#d8d8c2');rect(-49,-24,98,45,'#a69771');rect(-40,-36,65,42,'#eeeecc');for(let i=-32;i<20;i+=16)rect(i,-27,10,12,'#456c76');
+    } else if(kind==='pipe') {
+      rect(-15,-18,100,35,'#6d6c58');rect(-12,-18,100,8,'#b7ab83');rect(-24,-24,24,48,'#353c35');rect(-23,-14,14,28,e.hp>0?'#151f1c':'#a4926b');
+      if(e.hp>0)rect(-65,-12,40,35,'#182b27');
+    } else if(kind==='oil') {
+      rect(-52,-20,104,66,'#6d7060');rect(-52,-28,104,14,'#a0a18b');rect(-39,-36,78,14,'#c0bfa1');rect(-52,28,104,8,'#3a443b');
+    } else if(kind==='gate') {
+      rect(-64,-28,8,65,'#575446');rect(56,-28,8,65,'#575446');rect(-58,-20,116,12,'#c4ad73');rect(-58,9,116,9,'#c4ad73');
+    } else { rect(-49,-13,98,40,'#ad9460');rect(-37,-25,74,19,'#c8af73');if(kind==='silo'){rect(-30,-18,60,38,'#424c45');rect(-12,-21,24,35,'#e3dbb3');rect(-12,-10,24,6,'#ac503b');} }
+    ctx.restore();
   }
   function drawMap(c) {
     const size = c.canvas.width, scale = size / SIZE; c.fillStyle = '#112c23'; c.fillRect(0,0,size,size);
     if (terrain.complete && terrain.naturalWidth) { c.globalAlpha = .3; c.drawImage(terrain,0,0,size,size); c.globalAlpha = 1; c.fillStyle = '#063b2690'; c.fillRect(0,0,size,size); }
     c.strokeStyle = '#6e966433'; c.lineWidth = 1; for(let i=0;i<size;i+=size/12) { c.beginPath(); c.moveTo(i,0); c.lineTo(i,size); c.moveTo(0,i); c.lineTo(size,i); c.stroke(); }
     function dot(o,color,r=3) { c.fillStyle=color;c.beginPath();c.arc(o.x*scale,o.y*scale,r,0,Math.PI*2);c.fill(); }
-    g.enemies.filter(e=>e.hp>0).forEach(e=>dot(e,e.kind!=='tank'?'#ff7654':'#be7560',e.kind!=='tank'?4:2));
-    g.people.filter(e=>!e.rescued).forEach(e=>dot(e,'#ffb44e',3)); g.supplies.filter(e=>!e.used).forEach(e=>dot(e,'#a3c58c',2));
+    g.enemies.filter(e=>e.hp>0&&!e.hidden).forEach(e=>dot(e,e.civilian?'#99bb88':e.deadline&&Math.floor(g.time*4)%2?'#fff2b5':e.kind!=='tank'?'#ff7654':'#be7560',e.kind!=='tank'?4:2));
+    g.people.filter(DesertCampaigns.waiting).forEach(e=>dot(e,'#ffb44e',3)); g.supplies.filter(e=>!e.used).forEach(e=>dot(e,'#a3c58c',2));
+    for(const z of [...g.zones,...(g.oilZone?[g.oilZone]:[])]){dot(z,'#e4ead1',5);c.fillStyle='#e4ead1';c.font='12px monospace';c.fillText('L',z.x*scale+6,z.y*scale);}
+    if(g.bus?.active)dot(g.bus,'#f1d663',5);
+    const target=nextObjective(g);if(target){c.strokeStyle='#ffdd76';c.lineWidth=2;c.strokeRect(target.x*scale-8,target.y*scale-8,16,16);}
     c.strokeStyle='#e4ead1';c.strokeRect(g.base.x*scale-7,g.base.y*scale-7,14,14);c.fillStyle='#e4ead1';c.font='12px monospace';c.textAlign='center';c.fillText('H',g.base.x*scale,g.base.y*scale+4);
     c.save(); c.translate(g.player.x*scale,g.player.y*scale); c.rotate(g.player.angle); c.fillStyle='#c8fb8f'; c.beginPath();c.moveTo(7,0);c.lineTo(-5,-4);c.lineTo(-3,0);c.lineTo(-5,4);c.closePath();c.fill();c.restore();
     c.strokeStyle='#dbe9c96a';c.strokeRect(camera.x*scale,camera.y*scale,w/zoom*scale,h/zoom*scale);
   }
   function refreshHUD() {
-    const p = g.player, radars = g.enemies.filter(e=>e.kind!=='tank'), destroyed=radars.filter(e=>e.hp<=0).length;
+    const p = g.player, done=g.tasks.filter(t=>t.done).length, current=g.tasks[g.stage];
     $('op-number').textContent=`OPERATION 0${g.level+1}`; $('mission-name').textContent=missions[g.level].name;
     $('mission-copy').textContent=missions[g.level].text;
-    $('radar-count').textContent=`${destroyed}/${radars.length}`; $('crew-count').textContent=`${g.delivered}/${g.people.length}`;
-    $('radar-objective').classList.toggle('complete',destroyed===radars.length);$('crew-objective').classList.toggle('complete',g.delivered===g.people.length);$('base-objective').classList.toggle('complete',g.status==='won');
+    $('current-mission').textContent=current?`Mission ${g.stage+1}: ${current.title}`:'Return to the frigate';
+    $('mission-hint').textContent=current?current.hint:'Hover over the frigate to complete the campaign.';
+    $('mission-list').replaceChildren(...g.tasks.map((t,i)=>{const li=document.createElement('li');li.textContent=g.level===3&&i>Math.max(1,g.stage)?'Awaiting orders':t.title;li.className=t.done?'complete':i===g.stage?'active':'';return li;}));
+    $('radar-count').textContent=`${done}/${g.tasks.length}`; $('crew-count').textContent=String(g.delivered);
+    $('radar-objective').classList.toggle('complete',done===g.tasks.length);$('crew-objective').classList.toggle('complete',g.status==='won');$('base-objective').classList.toggle('complete',g.status==='won');
     for(const key of ['fuel','armor','rockets','hellfires']) { $(key).value=p[key]; $(key+'-value').textContent=Math.ceil(p[key]); }
     $('cabin').value=p.crew;$('cabin-value').textContent=`${p.crew}/6`;$('ammo-value').textContent=p.ammo;
     $('lives').textContent=`LIVES ${g.lives}`; $('score').textContent=String(g.score).padStart(6,'0');$('clock').textContent=`${String(Math.floor(g.time/60)).padStart(2,'0')}:${String(Math.floor(g.time%60)).padStart(2,'0')}`;

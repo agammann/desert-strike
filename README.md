@@ -1,6 +1,6 @@
 # Desert Strike: Return to the Gulf
 
-A standalone recreation of the 1992 helicopter game, built by **agammann** with a custom JavaScript game engine and newly drawn pixel artwork. Fly desert sorties, destroy priority targets, recover stranded personnel, and make it back to the frigate.
+A standalone recreation of the 1992 helicopter game, built by **agammann** with a custom JavaScript game engine and newly drawn pixel artwork. Play through 27 mission objectives across the original four-campaign structure: intelligence captures, timed missile interceptions, rescues, the embassy bus escort, and the final bomber attack.
 
 **[Play now on Sites](https://desert-strike.alx21.chatgpt.site/)** · **[GitHub Pages](https://agammann.github.io/desert-strike/)** · **[Download the offline game](https://github.com/agammann/desert-strike/releases/latest/download/Desert-Strike-offline.zip)** · **[Get the source](https://github.com/agammann/desert-strike/archive/refs/heads/main.zip)**
 
@@ -38,20 +38,32 @@ On narrow screens, use the direction pad and **Gun / Hydra / Hellfire** buttons.
 
 ## Complete a campaign
 
-- Destroy every priority site marked in red on the map. Tanks are optional threats; radar, power, airfield, command, missile and nuclear sites count toward the objective.
-- Hover close to stranded crew until the winch completes. The cabin holds **six** people. Crew only count as delivered after you return them to the frigate marked **H**.
-- Hover near the frigate to unload. Delivered crew repair armor: 150 points per person in the first campaign, 100 in later campaigns, up to **600**.
-- In **Standard**, fuel and ammunition are finite. Hover over supplies to refill fuel, ammunition, or armor. The frigate does not provide free fuel or ammunition.
-- Start with **1,178 gun rounds, 38 Hydras, 8 Hellfires, and three lives**. Destroying your aircraft consumes a life. The replacement retains passengers and ammunition. Losing all three aircraft ends the campaign.
-- Destroy all required sites, deliver everyone, and return to the frigate to win. Then continue to the next campaign.
+Follow the **current mission** and numbered checklist beside the battlefield. The yellow map marker and edge arrow point toward the next objective. Press **M** to pause and inspect the full map.
 
-**Relaxed** mode reduces incoming damage and fuel use, and adds automatic resupply and repairs at the frigate. All four campaigns are selectable from the briefing: **Air Superiority**, **Scud Buster**, **Embassy City**, and **Nuclear Storm**.
+- Capture commanders and scientists to reveal hidden targets. Watch launch countdowns; opening a bunker or capturing a commander can trigger the next event.
+- Stop shooting when people emerge. Hover to winch them aboard. The cabin holds **six**; deliver passengers at a marked **L** landing zone or the **H** frigate.
+- Delivered personnel restore armor: 150 points each in Air Superiority, 100 in later campaigns, up to **600**. Ordinary MIAs are optional; the briefing identifies required rescues.
+- In **Standard**, collect fuel, ammunition and repair crates. The frigate has no free fuel or ammo. Fuel is conserved over water. Quick-winch and extra-life pickups are available.
+- Start with **1,178 gun rounds, 38 Hydras, 8 Hellfires, and three lives**. Aircraft replacement retains passengers and ammunition. Losing every aircraft or failing a critical mission ends the operation.
+- Ground missions temporarily take your copilot away, disabling automatic aiming and missile tracking. Use mouse aim or steer toward the target. For the bus, clear its route and fly beside it.
+- When every required mission is complete, **hover at the frigate** to finish. Continue to the next campaign from the results screen.
 
-## What this recreation includes
+**Relaxed** mode reduces damage and fuel use, lengthens mission timers, and restores resources at the frigate. Every campaign is selectable from the briefing.
 
-Four compact, reinterpreted campaigns; classic control options; three weapons; hover rescues; limited supplies; three lives; scrolling pixel-art scenery; a pausing tactical map; synthesized sound; desktop and touch controls; restart and campaign results.
+| Campaign | Missions | Main operations |
+| :--- | :---: | :--- |
+| Air Superiority | 5 | Radar, power, airfields, commanders, secret-agent extraction |
+| Scud Buster | 6 | Jail break, chemical complex, timed SCUD launches, POW rescue |
+| Embassy City | 8 | Inspectors, biological silos, sea/yacht rescues, ambassador, bus escort |
+| Nuclear Storm | 8 | Commandos, oil spills, shelters, bomb trucks, nuclear plant, palace, bomber |
 
-This is **not an exact port or a pixel-for-pixel copy**. The layouts, mission scripts, sprite artwork, audio, enemy behavior and balance are newly implemented. Campaigns reuse a coastal terrain background with different target and rescue placements. Original cutscenes, passwords, copilot selection, building collisions, civilian penalties, and the original game's full scripted mission sequences are not implemented. There is no mid-campaign save; keep the tab open and pause, or restart a campaign from the briefing.
+Read **[the campaign guide](docs/CAMPAIGNS.md)** for every objective, rescue threshold, timer and failure condition.
+
+## How close is it to the 1992 game?
+
+Version **0.2.0** reconstructs the original campaign structure and major mission events. It replaces the first release's generic destroy-and-rescue objectives with role-based rescues, intelligence reveals, mission timers, escort behavior and specific failure conditions.
+
+It is **not a verified one-to-one port**. Maps are compact original layouts sharing one terrain background. Artwork, audio, physics, enemy behavior, scoring, timers and balance are newly implemented. The original enemy roster, complete maps, cutscenes, palace escape vehicle, copilot selection, passwords, and building collisions are not fully reproduced. There is no mid-campaign save. See the [fidelity notes and reference sources](docs/CAMPAIGNS.md#what-matches-and-what-remains-approximate) for precise boundaries.
 
 Desert Strike: Return to the Gulf is the title of Electronic Arts' original game. This is an unofficial fan recreation and is not affiliated with or endorsed by Electronic Arts. No original game files are included.
 

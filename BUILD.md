@@ -5,7 +5,7 @@ Requires **Node.js 20 or newer** to build and test. Playing a release only requi
 ```sh
 git clone https://github.com/agammann/desert-strike.git
 cd desert-strike
-node --test tests/simulation.test.cjs
+node --test tests/campaigns.test.cjs
 node scripts/build.mjs
 ```
 
@@ -21,13 +21,15 @@ Open `http://127.0.0.1:4173`. The server binds only to loopback. Press Ctrl+C to
 
 | File | Responsibility |
 | :--- | :--- |
-| `src/simulation.js` | Campaign definitions, flight physics, combat, rescue, supplies and victory/failure |
+| `src/campaigns.js` | Mission definitions, intelligence, scripted events, escorts, timers and campaign success/failure |
+| `src/simulation.js` | Flight physics, combat, winch, supplies, damage and lives |
 | `src/game.js` | Canvas rendering, input, audio synthesis, HUD, map, pause and menus |
 | `src/style.css` | Desktop/mobile game interface |
 | `assets/terrain.png` | Shared pixel-art coastal terrain |
 | `assets/sprites.png` | Transparent aircraft, building, personnel and supply atlas |
 | `scripts/build.mjs` | Creates the standalone offline and Pages HTML |
-| `tests/simulation.test.cjs` | Resource, flight, weapons, rescue, life and complete-campaign checks |
+| `tests/campaigns.test.cjs` | Mission transitions, failure cases, resources and eight complete playthroughs |
+| `tests/pilot.cjs` | A read-only test pilot that emits ordinary player inputs |
 
 ## GitHub builds
 

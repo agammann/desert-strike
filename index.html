@@ -20,18 +20,18 @@
         <div class="briefing">
           <p class="operation" id="overlay-kicker">FLIGHT BRIEFING</p>
           <h2 id="overlay-title">Bring everyone<br>home.</h2>
-          <p id="overlay-copy">Fly low. Silence the radar network. Winch the stranded crew aboard and return them safely to base.</p>
+          <p id="overlay-copy">Follow the briefing through 27 missions: capture intelligence, protect rescues, manage supplies, and return to the frigate.</p>
           <div id="setup"><label>Operation<select id="mission"><option value="0">01 — Air Superiority</option><option value="1">02 — Scud Buster</option><option value="2">03 — Embassy City</option><option value="3">04 — Nuclear Storm</option></select></label><label>Flight mode<select id="difficulty"><option value="standard">Standard</option><option value="story" selected>Relaxed — less damage, more fuel</option></select></label><label>Controls<select id="controls"><option value="momentum">With Momentum — turn and thrust</option><option value="cockpit">From Cockpit — direct throttle</option><option value="above" selected>From Above — compass movement + mouse aim</option></select></label></div>
           <button id="launch" class="primary" disabled>Loading flight deck…</button>
           <button id="retry" class="secondary" hidden>Restart operation</button>
-          <p class="briefing-tip" id="briefing-tip">WASD fly · J gun · K Hydra · L Hellfire<br>Hover to pick up crew and supplies. Return crew to the ship.</p>
+          <p class="briefing-tip" id="briefing-tip">WASD fly · J gun · K Hydra · L Hellfire<br>Hover to pick up crew and supplies. Deliver at L landing zones or the ship.</p>
         </div>
       </div>
-      <div id="big-map" hidden><h2>Tactical map</h2><canvas id="map-large" width="600" height="600" aria-label="Full tactical map"></canvas><p>H Base · Orange crew · Red targets · Green supplies</p><button id="close-map">Close map · M</button></div>
+      <div id="big-map" hidden><h2>Tactical map</h2><canvas id="map-large" width="600" height="600" aria-label="Full tactical map"></canvas><p>H Frigate · L Landing zone · Orange personnel · Red targets · Green supplies</p><button id="close-map">Close map · M</button></div>
       <div class="touch-controls" aria-label="Touch flight controls"><div class="dpad"><button data-hold="up" aria-label="Fly north">↑</button><button data-hold="left" aria-label="Fly west">←</button><button data-hold="down" aria-label="Fly south">↓</button><button data-hold="right" aria-label="Fly east">→</button></div><div class="actions"><button data-hold="fire">Gun</button><button data-hold="rocket">Hydra</button><button data-hold="hellfire">Hellfire</button></div></div>
     </section>
     <aside>
-      <div class="mission-panel"><p class="operation" id="op-number">OPERATION 01</p><h2 id="mission-name">Air Superiority</h2><p id="mission-copy">Disable enemy sites.<br>Bring everyone home.</p><h3>Objectives</h3><ul class="objectives"><li id="radar-objective"><span class="check"></span><span>Destroy sites</span><b id="radar-count">0/6</b></li><li id="crew-objective"><span class="check"></span><span>Deliver crew</span><b id="crew-count">0/8</b></li><li id="base-objective"><span class="check"></span><span>Return to base</span></li></ul></div>
+      <div class="mission-panel"><p class="operation" id="op-number">OPERATION 01</p><h2 id="mission-name">Air Superiority</h2><p id="mission-copy">Disable enemy sites.<br>Bring everyone home.</p><h3 id="current-mission">Mission 1</h3><p id="mission-hint"></p><ol id="mission-list" class="mission-list"></ol><ul class="objectives"><li id="radar-objective"><span class="check"></span><span>Missions complete</span><b id="radar-count">0/6</b></li><li id="crew-objective"><span class="check"></span><span>Personnel safe</span><b id="crew-count">0/8</b></li><li id="base-objective"><span class="check"></span><span>Return to base</span></li></ul></div>
       <div class="map-panel"><button id="map-toggle" aria-label="Open tactical map">Tactical map <span>M ↗</span></button><canvas id="minimap" width="320" height="320" aria-label="Mission map"></canvas><div class="map-legend"><span><i class="radar-dot"></i>Targets</span><span><i class="crew-dot"></i>Crew</span><span><i class="base-dot"></i>Base</span></div></div>
       <div class="score-panel"><span><span id="lives">LIVES 3</span></span><strong id="score">000000</strong></div>
     </aside>
@@ -40,5 +40,5 @@
   <footer><span><kbd>W A S D</kbd> Fly / turn</span><span><kbd>Click / J</kbd> Fire</span><span><kbd>K / Space</kbd> Hydras</span><span><kbd>L</kbd> Hellfires</span><span><kbd>M</kbd> Map</span><span><kbd>P</kbd> Pause</span></footer>
   <div class="credits">An unofficial recreation by <a href="https://github.com/agammann" target="_blank" rel="noreferrer">agammann</a><a href="https://github.com/agammann/desert-strike/releases/latest/download/Desert-Strike-offline.zip">Download offline</a><a href="https://github.com/agammann/desert-strike" target="_blank" rel="noreferrer">Source &amp; instructions</a></div>
 </main>
-<script src="src/simulation.js"></script><script src="src/game.js"></script>
+<script src="src/campaigns.js"></script><script src="src/simulation.js"></script><script src="src/game.js"></script>
 </body></html>
