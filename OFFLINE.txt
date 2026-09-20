@@ -1,0 +1,22 @@
+DESERT STRIKE: RETURN TO THE GULF
+Standalone fan recreation by agammann
+
+Extract this entire ZIP, then open Desert-Strike.html in a modern browser.
+On Windows you can also double-click Play.cmd.
+No internet, ROM, emulator, installation, or server is required.
+
+Default flight (From Above): WASD or arrows move in compass directions.
+Classic With Momentum mode: W/S forward/reverse, A/D turn.
+Weapons: J chain gun, K or Space Hydra, L Hellfire.
+Hover over people and supplies to pick them up automatically.
+Return crew to the frigate (H on the map) to unload and repair armor.
+M opens the map and pauses. P or Escape pauses/resumes.
+From Above controls are available in the briefing for easier flying.
+
+Standard mode requires supply pickups for fuel and ammunition.
+Relaxed mode also resupplies at the frigate.
+No mid-campaign save: use pause or restart the campaign from its briefing.
+
+This is a newly implemented recreation, not an exact port of the original.
+Full instructions and buildable source:
+https://github.com/agammann/desert-strike
