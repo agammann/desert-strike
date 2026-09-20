@@ -24,6 +24,8 @@ Open `http://127.0.0.1:4173`. The server binds only to loopback. Press Ctrl+C to
 | `src/terrain-data.js` | Matched 512-pixel terrain grid, campaign palettes and sampled coast boundaries |
 | `src/original-art.js` | Original sprite frame selection and terrain composition |
 | `assets/original/` | Original sprite sheets, tiles and music; see THIRD_PARTY.md |
+| `src/dos-data.js` | Decoded numeric DOS object metadata and artwork rectangles |
+| `src/dos-reference.js` | Applies confirmed DOS anchors/artwork and documented reconstruction rules |
 | `src/reference.js` | Copilot profiles, weapon table, map geometry, landmark placements, defenses and supply distribution |
 | `src/campaigns.js` | Mission definitions, intelligence, scripted events, escorts, timers and campaign success/failure |
 | `src/simulation.js` | Flight physics, combat, winch, supplies, damage and lives |
@@ -32,7 +34,7 @@ Open `http://127.0.0.1:4173`. The server binds only to loopback. Press Ctrl+C to
 | `assets/terrain.png` | Legacy v0.1/v0.2 terrain artwork; no longer loaded or included in builds |
 | `assets/sprites.png` | Supplementary recreated supply and landing-zone atlas |
 | `scripts/build.mjs` | Creates the standalone offline and Pages HTML |
-| `tests/campaigns.test.cjs` | Mission transitions, failure cases, resources and eight complete playthroughs |
+| `tests/campaigns.test.cjs` | Mission transitions, failure cases, resources and ten complete playthroughs |
 | `tests/pilot.cjs` | A read-only test pilot that emits ordinary player inputs |
 
 ## GitHub builds

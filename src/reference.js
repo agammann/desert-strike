@@ -64,6 +64,7 @@
     ['tower',4744,2248,150],['jet',4740,2360,20],['jet',4652,2240,20],
     ['airfield',4736,2180,200],['airfield',5056,2316,200],['jet',4924,2504,20],
   ];
+  maps.push({width:6144,height:4096,base:[1420,3510],color:'#b39857',water:'#176f83',coast:[],roads:[],zones:[[1344,2304],[4542,1733],[4030,3781]],sites:{},fuel:[],ammo:[],repair:[],winch:[1394,36],life:[2162,2304]});
   const terrain=typeof module!=='undefined'&&module.exports?require('./terrain-data.js'):root.DesertTerrain;
   maps.forEach((map,i)=>{map.coast=terrain[i].coast;});
   function coastAt(map,y){const points=map.coast;if(y<=points[0][1])return points[0][0];for(let i=1;i<points.length;i++){const [x1,y1]=points[i-1],[x2,y2]=points[i];if(y<=y2)return x1+(x2-x1)*(y-y1)/(y2-y1);}return points.at(-1)[0];}
@@ -111,7 +112,7 @@
     for(let i=0;i<miaCount;i++){const z=g.zones[i%g.zones.length];g.people.push({id:g.people.length,x:z.x+180+(i%3)*18,y:z.y+140+Math.floor(i/3)*25,role:'MIA',rescued:false,dead:false,delivered:false});}
     // Building resistance is calibrated separately from the documented weapon table.
     for(const e of g.enemies)if(e.kind!=='tank'){
-      const hp={radar:200,power:450,airfield:195,tower:135,jet:24,command:300,prison:240,chemical:300,bunker:240,plant:500,palace:1000,bomber:3000,yacht:600,scud:200,dune:36,pipe:24,gate:80,truck:150,atv:300}[e.kind]||e.hp;
+      const hp={radar:100,power:400,airfield:200,tower:150,jet:20,command:250,prison:150,chemical:g.level===2?200:300,bunker:200,plant:500,palace:1000,bomber:3000,yacht:150,scud:200,dune:25,pipe:24,gate:80,truck:100,atv:300,supergun:400,convoy:200,transport:200}[e.kind]||e.hp;
       e.hp=e.maxHp=hp;e.collisionRadius=e.kind==='yacht'?30:['jet','scud','truck','pipe','dune','bomber','gate'].includes(e.kind)?0:20;
       if(e.kind==='yacht')e.solidWreck=true;
     }
@@ -156,6 +157,8 @@
     if(g.level<2&&!g.jakeUnlocked)g.people.push({x:m.life[0]+70,y:m.life[1]+70,role:'Valdez',rescued:false,dead:false,delivered:false});
     g.people.forEach((p,i)=>p.id=i);
     g.scenery=m.roads.flatMap((road,i)=>i%2?[]:road.slice(1,-1).filter((_,j)=>j%3===0).map(([x,y])=>({x:x+55,y:y-45,radius:18,hp:60,maxHp:60})));
+    const dos=typeof module!=='undefined'&&module.exports?require('./dos-reference.js'):root.DesertDOSReference;
+    dos.apply(g,configureEnemy);
   }
   const api={weapons,copilots,maps,water,coastAt,apply,configureEnemy};if(typeof module!=='undefined'&&module.exports)module.exports=api;root.DesertReference=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

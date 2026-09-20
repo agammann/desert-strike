@@ -21,12 +21,15 @@ Use the map Display selector to find visible supplies and mission targets.
 Select a copilot in the briefing. Rescue Valdez and deliver him to the frigate
 to unlock Jake for later operations.
 Relaxed mode also resupplies at the frigate.
-Follow the numbered mission briefing through 27 objectives in four campaigns.
+Follow the numbered mission briefing through 35 objectives in five campaigns.
 Capture intelligence to reveal targets. Watch missile and rescue countdowns.
 Protect embassy officials while boarding, clear the gate, and escort the bus.
 Watch for helicopter reinforcements and the armor ambush.
-At the palace, follow the occupied ATV and hold fire until the copilot exits.
-Destroy the empty vehicle, breach the bomber, rescue him, then finish the plane.
+At the palace, follow the indestructible ATV and wait for the copilot transfer.
+Breach the bomber, rescue him, then finish the plane.
+Supergun: intercept the parts convoy, buy the official’s intelligence with the
+cash case, destroy the factories and guns, then capture the general alive.
+Deliver the general to the frigate for trial.
 Enable Sound for original briefing/result music and in-flight effects.
 See THIRD_PARTY.md for artwork and music credits and rights information.
 After all required missions are complete, hover at the frigate to finish.

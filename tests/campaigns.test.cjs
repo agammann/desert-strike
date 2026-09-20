@@ -7,7 +7,7 @@ const step=(g,input,seconds)=>{for(let i=0;i<seconds*60;i++)update(g,input,1/60)
 const hover=(g,o)=>{g.player.x=o.x;g.player.y=o.y;g.player.vx=g.player.vy=0;};
 const destroy=(g,e)=>{e.hp=0;C.onDestroy(g,e);};
 const capture=(g,h)=>{h.rescued=true;g.passengers.push(h);g.player.crew=g.passengers.length;C.onRescue(g,h);};
-test('27 missions in the original four-campaign order',()=>{assert.deepEqual([0,1,2,3].map(i=>createGame(i).tasks.length),[5,6,8,8]);assert.equal(createGame(3).tasks[7].title,'Nuclear bomber');});
+test('35 missions in the supplied DOS five-campaign order',()=>{assert.deepEqual([0,1,2,3,4].map(i=>createGame(i).tasks.length),[5,6,8,8,8]);assert.equal(createGame(3).tasks[7].title,'Nuclear bomber');});
 test('fuel conserved over water and consumed over land',()=>{const g=createGame();step(g,{},2);assert.equal(g.player.fuel,100);hover(g,{x:5000,y:1500});step(g,{},2);assert.ok(g.player.fuel<100);});
 test('normalized diagonal flight and world bounds',()=>{const a=createGame(),b=createGame();step(a,{right:true},2);step(b,{right:true,up:true},2);assert.ok(Math.abs(Math.hypot(a.player.vx,a.player.vy)-Math.hypot(b.player.vx,b.player.vy))<.01);hover(a,{x:a.world.width-35,y:1800});step(a,{right:true},1);assert.equal(a.player.x,a.world.width-30);});
 test('turn and thrust preserves heading',()=>{const g=createGame(0,'standard','momentum');step(g,{right:true},.5);const angle=g.player.angle;step(g,{up:true},1);assert.ok(g.player.x>380);assert.equal(g.player.angle,angle);});
@@ -19,7 +19,7 @@ test('quick winch and extra life must be exposed and are single-use',()=>{const 
 test('local radar alert extends range and increases damage and cadence',()=>{const g=createGame();const t=g.enemies.find(e=>e.weapon==='rapier');const r=g.enemies.find(e=>e.group==='radars');g.enemies=[t,r];t.alertGroup='radars';hover(g,{x:t.x+240,y:t.y});t.heading=0;t.cooldown=0;update(g);assert.equal(g.bullets[0].damage,150);assert.equal(t.cooldown,2.5*.65);r.hp=0;g.bullets=[];t.cooldown=0;update(g);assert.equal(g.bullets.length,0);hover(g,{x:t.x+150,y:t.y});update(g);assert.equal(g.bullets[0].damage,100);assert.equal(t.cooldown,2.5);});
 test('power alert improves aim without extending range',()=>{const g=createGame();const t=g.enemies.find(e=>e.weapon==='rapier'),r=g.enemies.find(e=>e.kind==='power');g.enemies=[t,r];t.alertGroup='power';hover(g,{x:t.x+150,y:t.y});t.heading=Math.PI;t.cooldown=0;step(g,{},.5);assert.ok(g.bullets.some(b=>b.enemy));r.hp=0;g.bullets=[];t.heading=Math.PI;t.cooldown=0;step(g,{},.5);assert.equal(g.bullets.length,0);});
 test('manual enemy armor, damage and firing intervals',()=>{const {weapons}=require('../src/reference');assert.deepEqual(Object.values(weapons).map(w=>[w.armor,w.damage,w.interval]),[[10,5,.5],[25,75,3],[50,20,.5],[75,100,2.5],[100,25,.33],[150,40,.33],[150,50,1.25],[150,100,1.5],[200,100,2.5],[250,150,2]]);});
-test('four reference dimensions and campaign coastlines',()=>{const R=require('../src/reference');assert.deepEqual(R.maps.map(m=>[m.width,m.height]),[[6144,3072],[6144,3584],[6144,4096],[6144,4096]]);for(let i=0;i<4;i++){const g=createGame(i);assert.equal(R.water(g,g.base.x,g.base.y),true);assert.equal(R.water(g,6000,1500),false);}});
+test('five reference dimensions and campaign coastlines',()=>{const R=require('../src/reference');assert.deepEqual(R.maps.map(m=>[m.width,m.height]),[[6144,3072],[6144,3584],[6144,4096],[6144,4096],[6144,4096]]);for(let i=0;i<5;i++){const g=createGame(i);assert.equal(R.water(g,g.base.x,g.base.y),true);assert.equal(R.water(g,6000,1500),false);}});
 test('building collision blocks flight and damages armor',()=>{const g=createGame();const b=g.enemies.find(e=>e.kind==='radar');g.enemies=[b];hover(g,{x:b.x-31,y:b.y});step(g,{right:true},.2);assert.ok(g.player.x<b.x-29);assert.equal(g.player.armor,590);});
 test('classic strafe preserves heading while moving sideways',()=>{const g=createGame(0,'standard','momentum'),angle=g.player.angle,x=g.player.x,y=g.player.y;step(g,{right:true,strafe:true},1);assert.equal(g.player.angle,angle);assert.ok(g.player.x>x+90);assert.equal(g.player.y,y);});
 test('commander reveals agent; extraction requires reinforcements defeated',()=>{const g=createGame(),b=g.enemies.find(e=>e.group==='agent');assert.equal(b.hidden,true);destroy(g,g.enemies.find(e=>e.group==='commands'));capture(g,g.people.find(h=>h.role==='commander'));assert.equal(b.hidden,false);destroy(g,b);hover(g,g.agentZone);update(g);assert.equal(g.copilot,false);assert.equal(g.enemies.filter(e=>e.group==='agent-wave').length,3);g.enemies.filter(e=>e.group==='agent-wave').forEach(e=>destroy(g,e));update(g);assert.equal(g.people.filter(h=>h.role==='agent').length,1);});
@@ -43,10 +43,10 @@ test('palace vehicle, escorted boarding, bomber breach and copilot recovery',()=
   capture(g,captive);assert.equal(g.copilot,true);assert.equal(g.people.filter(p=>p.role==='copilot').length,1);
   const f=createGame(3),plane=f.enemies.find(e=>e.kind==='bomber');plane.hidden=false;plane.deadline=1;f.time=2;update(f);assert.equal(f.status,'lost');
 });
-test('shooting the occupied palace ATV fails the rescue',()=>{
-  const g=createGame(3),e=g.enemies.find(e=>e.kind==='atv');destroy(g,e);assert.equal(g.status,'lost');assert.match(g.message,/still inside/);
+test('DOS palace ATV is indestructible and is not required as a demolition target',()=>{
+  const g=createGame(3),e=g.enemies.find(e=>e.kind==='atv');e.hidden=false;g.enemies=[e];hover(g,{x:e.x-80,y:e.y});step(g,{hellfire:true,aimX:e.x,aimY:e.y},.5);assert.equal(e.hp,300);assert.equal(g.status,'playing');assert.equal(g.tasks[7].targets().includes(e),false);
 });
-for(const mode of ['standard','story'])for(let level=0;level<4;level++)test(`full playthrough: campaign ${level+1}, ${mode}`,()=>{
+for(const mode of ['standard','story'])for(let level=0;level<5;level++)test(`full playthrough: campaign ${level+1}, ${mode}`,()=>{
   const g=createGame(level,mode);
   for(let n=0;n<150000&&g.status==='playing';n++)update(g,pilot(g,objective),1/60);
   assert.equal(g.status,'won',JSON.stringify({status:g.status,stage:g.stage,time:g.time,message:g.message,armor:g.player.armor,fuel:g.player.fuel,ammo:g.player.ammo,rockets:g.player.rockets,hellfires:g.player.hellfires,crew:g.player.crew,target:objective(g),remaining:g.tasks.filter(t=>!t.done).map(t=>t.title)}));
@@ -114,7 +114,7 @@ test('breached yacht still collides and does not release a second hostage stream
 test('civilian destruction penalizes score; scenery and cache covers award no target points',()=>{
   const g=createGame(3,'standard','above',{score:2000});
   C.scoreObject(g,g.enemies.find(e=>e.civilian&&e.kind==='truck'));assert.equal(g.score,1500);
-  C.scoreObject(g,g.scenery[0]);C.scoreObject(g,g.enemies.find(e=>e.cache));assert.equal(g.score,1500);
+  C.scoreObject(g,{kind:"scenery"});C.scoreObject(g,g.enemies.find(e=>e.cache));assert.equal(g.score,1500);
   C.scoreObject(g,g.enemies.find(e=>e.weapon));assert.equal(g.score,1850);
   C.score(g,'penalties',-9999);assert.equal(g.score,0);assert.equal(g.startScore+Object.values(g.scoreLog).reduce((a,b)=>a+b,0),0);
 });
@@ -179,4 +179,56 @@ test('escort bus faces its next waypoint while moving',()=>{
   const g=createGame(2),b=g.bus;g.stage=7;g.tasks.slice(0,7).forEach(t=>t.done=true);g.enemies=[];
   b.active=true;b.boarded=12;b.waypoint=0;b.path=[{x:b.x-100,y:b.y}];hover(g,{x:b.x+100,y:b.y});
   const x=b.x;C.tick(g,1/60);assert.equal(b.heading,Math.PI);assert.ok(b.x<x);
+});
+
+test('Supergun has the DOS airport, factories, guns and source supply coordinates',()=>{
+  const g=createGame(4),targets=group=>g.enemies.filter(e=>e.group===group);
+  assert.equal(targets('airfields').length,9);assert.equal(targets('superguns').length,10);
+  assert.deepEqual(targets('superguns').filter(e=>e.kind==='supergun').map(e=>[e.x,e.y,e.hp]),[[1537,79,400],[1880,343,400]]);
+  assert.equal(g.supplies.filter(s=>s.kind==='fuel').length,15);assert.equal(g.supplies.filter(s=>s.kind==='ammo').length,11);
+  assert.equal(new Set(g.enemies.map(e=>e.id)).size,g.enemies.length);
+});
+test('DOS Scud Buster production site and power station no longer use swapped estimated locations',()=>{
+  const g=createGame(1),plant=g.enemies.filter(e=>e.group==='chemical'),power=g.enemies.find(e=>e.group==='power');
+  assert.equal(plant.length,1);assert.deepEqual([plant[0].x,plant[0].y,plant[0].hp],[5929,3370,300]);
+  assert.deepEqual([power.x,power.y,power.hp],[3769,122,400]);assert.ok(g.enemies.filter(e=>e.group==='pow').every(e=>e.hp===100));
+});
+test('hidden DOS supplies share their building cover and become recoverable after its destruction',()=>{
+  const g=createGame(),cover=g.enemies.find(e=>e.revealsSupplies?.length&&e.group==='airfields');assert.ok(cover);
+  const pickups=cover.revealsSupplies.map(id=>g.supplies.find(s=>s.id===id));assert.ok(pickups.every(s=>s.hidden));
+  destroy(g,cover);assert.ok(pickups.every(s=>!s.hidden));
+});
+test('Supergun contact reveals the spy and essential intelligence casualties fail',()=>{
+  const g=createGame(4),spy=g.people.find(p=>p.role==='spy');assert.equal(spy.hidden,true);
+  capture(g,g.people.find(p=>p.role==='spy contact'));assert.equal(spy.hidden,false);assert.equal(g.tasks[0].test(),false);
+  capture(g,spy);assert.equal(g.tasks[0].test(),true);
+  const h=createGame(4);C.killPerson(h,h.people.find(p=>p.role==='spy contact'));assert.equal(h.status,'lost');
+});
+test('convoy moves only after the airport objective and delivery of parts fails the operation',()=>{
+  const g=createGame(4),truck=g.enemies.find(e=>e.kind==='convoy'),x=truck.x;
+  C.tick(g,1);assert.equal(truck.x,x);g.tasks.slice(0,2).forEach(t=>t.done=true);g.stage=2;truck.hidden=false;
+  C.tick(g,1);assert.notEqual(truck.x,x);truck.x=truck.destination.x;truck.y=truck.destination.y;C.tick(g,.1);assert.equal(g.status,'lost');
+});
+test('official requires the recovered cash case before intelligence can be bought',()=>{
+  const g=createGame(4);g.enemies.filter(e=>e.weapon).forEach(e=>e.hp=0);
+  const office=g.enemies.find(e=>e.group==='official');destroy(g,office);const official=g.people.find(p=>p.role==='official');hover(g,official);step(g,{},2);assert.equal(official.rescued,false);
+  const cash=g.supplies.find(s=>s.kind==='cash');cash.hidden=false;hover(g,cash);step(g,{},2);assert.equal(g.flags.cash,true);
+  hover(g,official);step(g,{},2);assert.equal(g.flags.bribePaid,true);assert.equal(g.flags.cash,false);
+});
+test('Carranza must survive and reach the frigate; an ordinary LZ cannot end Supergun',()=>{
+  const g=createGame(4);destroy(g,g.enemies.find(e=>e.group==='general-yacht'));const general=g.people.find(p=>p.role==='general');capture(g,general);
+  C.unload(g,g.zones[0]);assert.equal(general.delivered,false);assert.equal(g.tasks[7].test(),false);
+  C.unload(g,g.base);assert.equal(general.delivered,true);assert.equal(g.tasks[7].test(),true);
+  const h=createGame(4);destroy(h,h.enemies.find(e=>e.group==='general-yacht'));C.killPerson(h,h.people.find(p=>p.role==='general'));assert.equal(h.status,'lost');assert.match(h.message,/trial/);
+});
+
+test('DOS transports use the intact aircraft frame and buildings retain their source drawing offsets',()=>{
+  const vm=require('node:vm'),fs=require('node:fs'),data=require('../src/dos-data.js');
+  const scope={DesertDOS:data,Image:class{naturalWidth=2048;decode(){return Promise.resolve();}}};
+  vm.runInNewContext(fs.readFileSync(require.resolve('../src/original-art.js'),'utf8'),scope);
+  let draw;const ctx={save(){},restore(){},translate(){},scale(){},drawImage(...args){draw=args;}};
+  scope.DesertArt.object(ctx,{kind:'transport',x:4396,y:160,hp:200},0);assert.deepEqual(draw.slice(1,5),data.specialFrames.CD_BOMB[3]);
+  scope.DesertArt.object(ctx,{kind:'transport',x:4396,y:160,hp:0},0);assert.deepEqual(draw.slice(1,5),data.specialFrames.CD_BOMB[0]);
+  const building=data.levels[4].find(b=>b.name==='FACTORYX');scope.DesertArt.building(ctx,building);
+  assert.deepEqual(draw.slice(5),[building.sx,building.sy,building.rect[2],building.rect[3]]);
 });

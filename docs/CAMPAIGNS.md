@@ -1,6 +1,6 @@
 # Campaign guide and fidelity notes
 
-Version 0.5 implements **27 mission objectives in the original four-campaign structure**. The mission roles, intelligence dependencies, rescues, and major set pieces follow the 1992 game. It adds four maps at the Genesis reference dimensions and documented enemy weapon values. Placements, physics and balance remain a reconstruction; this is not a verified one-to-one port.
+Version **0.6.0** implements **35 objectives across five campaigns**, following the supplied DOS CD edition. Objective scripts are standalone reconstructions. Known object positions and armor come from decoded records; patrols, deadlines and some completion thresholds still need original-playthrough verification.
 
 The numbered mission list recommends the original order. In campaigns 1–3, visible objectives can be tackled early; intelligence still gates hidden targets. Nuclear Storm reveals later assignments as earlier ones finish. After completing a campaign's objectives, hover at the frigate to finish.
 
@@ -10,7 +10,7 @@ The numbered mission list recommends the original order. In campaigns 1–3, vis
 | :--- | :--- |
 | 1. Radar sites | Destroy both radar installations. Active radar extends the range of linked local defenses. |
 | 2. Power station | Cut power to weaken linked defenses' aiming, fire rate and protection. Recover the repair crate. |
-| 3. Airfields | Destroy the hangar, tower and two aircraft at each of two fields. |
+| 3. Airfields | Destroy two hangars, one tower and six aircraft at each of two fields. |
 | 4. Command centers | Destroy one command center and capture its commander. The second center is optional. Intelligence reveals the three-building agent compound. |
 | 5. Secret agent | Find the building covering the trapdoor, hover at LAND, and fight the three reinforcements while the copilot is inside. Winch the agent and copilot, deliver the agent, then return to the frigate. |
 
@@ -23,7 +23,7 @@ The first campaign includes 20 optional MIAs. Ordinary MIAs provide score and ar
 | 1. Radar sites | Destroy three installations. |
 | 2. Jail break | Breach three prisons and deliver at least 10 of 12 political prisoners. |
 | 3. Power station | Destroy the station. |
-| 4. Chemical weapons | Demolish the three production buildings. |
+| 4. Chemical weapons | Demolish the chemical production plant in the southeast. |
 | 5. SCUD launchers | Capture a commander from each headquarters. Each capture reveals one timed launcher. Stop at least 5 of 6 launches. |
 | 6. POW camp | Breach four huts and deliver at least 14 of 16 POWs. |
 
@@ -52,29 +52,28 @@ The bus moves when the helicopter is within 340 world units but more than 65 uni
 | 2. Oil spills | Shoot the small ends of three pipes to seal the leaks. |
 | 3. Bomb shelters | Breach four shelters and deliver at least 15 of 16 civilians. |
 | 4. Bomb parts | Destroy five trucks carrying red-marked bomb cargo. Preserve the green-marked civilian trucks. |
-| 5. Nuclear plant | Disable two optional radars, defeat the five Crotales, destroy the plant and two towers, and capture the scientist. |
+| 5. Nuclear plant | Disable two optional radars, defeat the five Crotales, destroy the plant, its annex and two towers, and capture the scientist. |
 | 6. Power station | Disable the palace's power station. |
 | 7. Presidential palace | Breach the palace and hover at its entrance. The copilot enters and is captured. |
-| 8. Nuclear bomber | Follow the occupied ATV without shooting it. Once your copilot disembarks, destroy the empty vehicle. Breach the bomber, rescue the copilot, destroy the plane before takeoff, and return. |
+| 8. Nuclear bomber | Follow the indestructible ATV and wait for your copilot to be transferred to the bomber. Breach the bomber, rescue the copilot, destroy the plane before takeoff, and return. |
 
 Oil storage takes damage while enemy tanks survive, and from stray fire. Losing two storage tanks fails the mission. Landing a partial commando squad, losing an essential person, destroying two civilian trucks, or allowing bomber takeoff also fails.
 
-## What matches, and what remains approximate
+## Supergun — 8 missions
 
-**Implemented:** the mission sequence above; distinct rescue roles; intelligence reveals; timed launches and drowning; six-passenger capacity; landing-zone delivery and armor recovery; three lives; three weapon inventories; fuel conservation over water; radar/power effects; quick winch; extra-life pickups; ground copilot missions; bus escort; oil protection; civilian truck identification; and bomber interception.
+| Mission | What to do in this version |
+| :--- | :--- |
+| 1. Spy | Reach the nomad-camp contact before his four-minute deadline. He identifies his brother southeast of the camp. Recover both. |
+| 2. Airfield | Disable the two airport radar controllers. Destroy four hangars, two towers and three parts transports. |
+| 3. Gun parts | Five trucks begin moving toward the factories after the airport is cleared. Stop them before arrival and rescue all five civilian drivers. Clear nearby defenses before hovering. |
+| 4. Bribe official | Recover the cash case at the city’s eastern edge. Open the official’s building and winch him aboard to buy intelligence. He cannot be collected without the cash. |
+| 5. Supergun site | Disable the south/east radar controllers. Destroy eight factories and both gun emplacements in the mountains. |
+| 6. Power station | Destroy the station in the southeast to weaken palace defenses. |
+| 7. General’s palace | Destroy the palace and its linked defenders. Capture the man who emerges; he is a double. |
+| 8. General’s yacht | Breach the yacht, stop firing, and winch Carranza from the water. Deliver him to the **frigate** for trial. An ordinary landing zone cannot complete this rescue. |
 
-**Map and combat foundation:** four separate maps at the reference image dimensions, reconstructed roads/coasts/landmarks, a longer embassy escort route, finite scattered supplies, hidden cache pickups, building collisions, strafing, local alert zones, distinct ground/air/boat behaviors, and enemy armor/damage/firing intervals from the Genesis manual. Standard / With Momentum is now the default.
+The mission text, object counts and key anchors come from the supplied DOS edition. The four-minute opening deadline, straight convoy routes at 12 world units/second, exact rescue quotas, release triggers and timing are reconstruction choices. The original campaign has additional scripts that remain undecoded. Enemy and friendly fire can kill the spies, drivers, official or general; losing essential personnel fails the operation. Maintain ammunition reserves and plan repair pickups before entering the airport or gun complex.
 
-**Reconstructed rather than exact:** building and defense placement, scenery density, speed, aiming, enemy AI, scoring, weapon ranges, fuel rate, alert multipliers, escort waypoints, and timer durations. Ground infiltration is represented by gameplay events rather than original cutscenes. The palace ATV, escorted boarding and bomber breach are separate phases; their path and timing are estimates. Original briefing/result music is included. Original passwords and mid-campaign saving are absent. Copilot selection, the Valdez unlock and a browser checkpoint between campaigns are implemented. Copilot assistance values and boarding/ambush timings are estimates. The **[fidelity ledger](FIDELITY.md)** separates documented values from estimates and lists the map references.
+## Fidelity limits
 
-**Timer settings in this version:** SCUDs 100 seconds Standard / 160 Relaxed after capture; silos 30 / 55 after exposure; hostages 100 / 150 after entering the water; bomber 150 / 240 after the escorted copilot boards the bomber. These are tested recreation settings, not measured original timings. Relaxed mode additionally reduces damage and fuel use and restores supplies at the frigate.
-
-**Corrected in v0.4.0:** one command center is sufficient; the spy compound has three buildings; only the first Nuclear Storm assignment appears initially; collisions inflict 10 damage on both objects and interrupt steering; fuel warnings repeat every two units below 14 and armor warns at 125. Tactical-map categories, hidden fuel/ammunition, copilot choice/Valdez rescue, and embassy boarding/ambush events are added.
-
-## Reference basis
-
-- [Electronic Arts' Genesis manual, hosted by Sega](https://www.sega.jp/genesismini2/assets/manual/pdf/US_Desert-Strike.pdf): primary basis for campaign order, rescue and intelligence rules, original aircraft resources, and the first two Nuclear Storm assignments. The manual intentionally leaves later final-campaign assignments undisclosed.
-- [Matt Keller's Genesis playthrough guide](https://gamefaqs.gamespot.com/genesis/366850-desert-strike-return-to-the-gulf/faqs/20312): the guide identifies Sega Mega Drive. Used to cross-check the first campaign's airfield and agent sequence.
-- [Cosmão's illustrated Mega Drive playthrough](https://shugames.blogspot.com/2015/10/guia-completo-desert-strike-mega-drive.html): firsthand playthrough covering later campaigns and the palace/bomber ending. Where guide prose conflicts with the original manual, the manual takes priority. Thresholds and layout details that have not been independently measured against original hardware remain reconstruction choices.
-
-No ROM, emulator, original executable or third-party game engine is included. Original DOS sprite sheets and Mega Drive music are included; see [THIRD_PARTY.md](../THIRD_PARTY.md).
+The five campaigns are completable in this standalone engine. They have not been compared against a complete, measured playthrough of the original DOS executable. Consult [DOS-COMPARISON.md](DOS-COMPARISON.md), [FIDELITY.md](FIDELITY.md) and [VERIFIED.md](../VERIFIED.md) for the distinction between decoded data, reconstructed rules and actual test evidence.

@@ -17,7 +17,7 @@
     if(music.paused)music.play().catch(()=>{});
   }
   let jakeUnlocked=false,checkpoint=null,persistedJake=false;
-  try{jakeUnlocked=localStorage.getItem('desert-strike-jake')==='true';const saved=JSON.parse(localStorage.getItem('desert-strike-checkpoint'));if(saved&&Number.isInteger(saved.level)&&saved.level>0&&saved.level<4&&Number.isFinite(saved.score)&&saved.score>=0)checkpoint=saved;}catch{}
+  try{jakeUnlocked=localStorage.getItem('desert-strike-jake')==='true';const saved=JSON.parse(localStorage.getItem('desert-strike-checkpoint'));if(saved&&Number.isInteger(saved.level)&&saved.level>0&&saved.level<missions.length&&Number.isFinite(saved.score)&&saved.score>=0)checkpoint=saved;}catch{}
   persistedJake=jakeUnlocked;
   function copilotUI(){const j=$('copilot').querySelector('option[value="jake"]');j.disabled=!jakeUnlocked;j.textContent=jakeUnlocked?'Jake — expert gunner and winch':'Jake — missing in action';const c=DesertReference.copilots[$('copilot').value];$('copilot-hint').textContent=`${c.name}: ${c.hint}`;}
   copilotUI();$('copilot').onchange=copilotUI;
@@ -36,21 +36,21 @@
   }
   function setMode(next) {
     mode = next; keys = {}; held = {}; pulse = {}; firing = false;g.accumulator=0;last=performance.now();
-    wantedMusic=next==='briefing'?'title':next==='won'?(g.level===3?'ending':'clear'):next==='lost'?'failed':'';syncMusic();
+    wantedMusic=next==='briefing'?'title':next==='won'?(g.level===missions.length-1?'ending':'clear'):next==='lost'?'failed':'';syncMusic();
     $('overlay').hidden = next === 'playing'; $('pause').textContent = next === 'paused' ? 'Resume' : 'Pause';
     $('setup').hidden = next !== 'briefing'; $('retry').hidden = !['paused', 'lost', 'won'].includes(next);
-    $('copilot-setup').hidden=next!=='briefing'&&!(next==='won'&&g.level<3);
+    $('copilot-setup').hidden=next!=='briefing'&&!(next==='won'&&g.level<missions.length-1);
     $('continue').hidden=next!=='briefing'||!checkpoint;
     if(checkpoint)$('continue').textContent=`Continue operation ${checkpoint.level+1} · ${checkpoint.score.toLocaleString()} pts`;
     if (next === 'paused') { $('overlay-kicker').textContent = 'FLIGHT PAUSED'; $('overlay-title').textContent = 'Holding position.'; $('overlay-copy').textContent = 'Your aircraft is safe. Resume when you are ready.'; $('launch').textContent = 'Resume flight'; }
     if (next === 'won' || next === 'lost') {
       $('overlay-kicker').textContent = next === 'won' ? 'OPERATION COMPLETE' : 'OPERATION FAILED';
       $('overlay-title').textContent = next === 'won' ? 'Operation accomplished.' : 'Operation failed.';
-      $('overlay-copy').textContent = next === 'won' ? `${g.tasks.length} missions completed. ${g.delivered} personnel safe. Score ${g.score.toLocaleString()}. ${g.level === 3 ? 'All four campaigns are available from the flight briefing.' : 'Your next operation is ready.'}` : g.message;
+      $('overlay-copy').textContent = next === 'won' ? `${g.tasks.length} missions completed. ${g.delivered} personnel safe. Score ${g.score.toLocaleString()}. ${g.level === missions.length-1 ? 'All five campaigns are available from the flight briefing.' : 'Your next operation is ready.'}` : g.message;
       if(next==='won')$('overlay-copy').textContent+=` Targets ${g.scoreLog.targets} · rescues ${g.scoreLog.rescues+g.scoreLog.delivery} · bonus ${g.scoreLog.bonus} · penalties ${g.scoreLog.penalties}.`;
-      $('launch').textContent = next === 'won' ? (g.level < 3 ? 'Next operation' : 'Back to briefing') : 'Retry operation';
+      $('launch').textContent = next === 'won' ? (g.level < missions.length-1 ? 'Next operation' : 'Back to briefing') : 'Retry operation';
       $('retry').textContent = 'Back to briefing';
-      if (next === 'won') { best = Math.max(best, g.score);checkpoint=g.level<3?{level:g.level+1,score:Math.floor(g.score/1000)*1000}:null;try { localStorage.setItem('desert-strike-best', String(best));if(checkpoint)localStorage.setItem('desert-strike-checkpoint',JSON.stringify(checkpoint));else localStorage.removeItem('desert-strike-checkpoint'); } catch {} }
+      if (next === 'won') { best = Math.max(best, g.score);checkpoint=g.level<missions.length-1?{level:g.level+1,score:Math.floor(g.score/1000)*1000}:null;try { localStorage.setItem('desert-strike-best', String(best));if(checkpoint)localStorage.setItem('desert-strike-checkpoint',JSON.stringify(checkpoint));else localStorage.removeItem('desert-strike-checkpoint'); } catch {} }
     }
     if (next === 'briefing') { $('overlay-kicker').textContent = 'FLIGHT BRIEFING'; $('overlay-title').innerHTML = 'Bring everyone<br>home.'; $('overlay-copy').textContent = 'Follow the mission briefing. Capture intelligence, protect rescues, manage supplies, and return to the frigate.'; $('launch').textContent = ready ? 'Launch operation' : 'Loading flight deck…'; }
     if (next === 'playing') canvas.focus({ preventScroll: true });
@@ -58,12 +58,12 @@
   function start(level = Number($('mission').value),score=0) { g = createGame(level, $('difficulty').value, $('controls').value,{copilotId:$('copilot').value,jakeUnlocked,score}); $('mission').value = String(level); mapOpen = false; $('big-map').hidden = true; mouse = null; setMode('playing'); refreshHUD(); }
   function pause() { if (mode === 'playing') setMode('paused'); else if (mode === 'paused') setMode('playing'); }
   function toggleMap() { if (!['playing', 'paused'].includes(mode)) return; mapOpen = !mapOpen; $('big-map').hidden = !mapOpen;keys={};held={};pulse={};firing=false;if (mapOpen) { setupMap();drawMap(large);$('map-category').focus(); }else canvas.focus({preventScroll:true}); }
-  $('launch').onclick = () => { if (!ready) return; if (sound) initAudio(); if (mode === 'paused') setMode('playing'); else if (mode === 'won' && g.level < 3) start(g.level + 1,Math.floor(g.score/1000)*1000); else if (mode === 'won') setMode('briefing'); else if (mode === 'lost') start(g.level,g.startScore); else start(); };
+  $('launch').onclick = () => { if (!ready) return; if (sound) initAudio(); if (mode === 'paused') setMode('playing'); else if (mode === 'won' && g.level < missions.length-1) start(g.level + 1,Math.floor(g.score/1000)*1000); else if (mode === 'won') setMode('briefing'); else if (mode === 'lost') start(g.level,g.startScore); else start(); };
   $('continue').onclick=()=>{if(ready&&checkpoint)start(checkpoint.level,checkpoint.score);};
   $('retry').onclick = () => { if (mode === 'paused') start(g.level,g.startScore); else { g = createGame(Number($('mission').value)); setMode('briefing'); refreshHUD(); } };
   $('pause').onclick = pause; $('map-toggle').onclick = toggleMap; $('close-map').onclick = toggleMap;
   $('sound').onclick = () => { try { initAudio(); sound = !sound; $('sound').textContent = sound ? 'Sound on' : 'Sound off'; $('sound').setAttribute('aria-pressed', String(sound));syncMusic(); } catch { $('sound').textContent = 'Sound unavailable'; } };
-  $('mission').onchange = () => { g = createGame(Number($('mission').value), $('difficulty').value);wantedMusic=`briefing${g.level+1}`;syncMusic();refreshHUD(); };
+  $('mission').onchange = () => { g = createGame(Number($('mission').value), $('difficulty').value);wantedMusic=`briefing${Math.min(g.level+1,4)}`;syncMusic();refreshHUD(); };
   window.addEventListener('keydown', e => {
     if (e.target instanceof HTMLSelectElement&&!['m','escape'].includes(e.key.toLowerCase())) return;
     const key = e.key.toLowerCase();
@@ -107,14 +107,15 @@
     camera.x = Math.max(0, Math.min(g.world.width - w / zoom, p.x - w / zoom / 2)); camera.y = Math.max(0, Math.min(g.world.height - h / zoom, p.y - h / zoom / 2));
     ctx.clearRect(0, 0, w, h); ctx.save(); ctx.scale(zoom, zoom); ctx.translate(-camera.x, -camera.y);
     drawGround(ctx);
+    const visible=(o,margin=180)=>o.x>camera.x-margin&&o.x<camera.x+w/zoom+margin&&o.y>camera.y-margin&&o.y<camera.y+h/zoom+margin;
     for(const o of g.scenery){ctx.save();ctx.globalAlpha=o.hp>0?1:.3;DesertArt.frame(ctx,'buildings',[16,384,80,64],o.x,o.y,.75);ctx.restore();}
-    DesertArt.frame(ctx,'allies',[16,16,240,160],g.base.x,g.base.y,.85); ring(g.base.x, g.base.y, 42, '#c5dfb377'); label('FRIGATE / DROP-OFF', g.base.x, g.base.y + 80, '#ceebbb');
-    for (const s of g.supplies) if (!s.used&&!s.hidden) { sprite(5, s.x, s.y, 72); label(s.kind.toUpperCase(), s.x, s.y + 23, '#c7e8b2'); }
+    if(g.dosShip)DesertArt.building(ctx,g.dosShip);else DesertArt.frame(ctx,'allies',[16,16,240,160],g.base.x,g.base.y,.85); ring(g.base.x, g.base.y, 42, '#c5dfb377'); label('FRIGATE / DROP-OFF', g.base.x, g.base.y + 80, '#ceebbb');
+    for (const s of g.supplies) if (!s.used&&!s.hidden&&visible(s,50)) { DesertArt.pickup(ctx,s); label(s.kind.toUpperCase(), s.x, s.y + 23, '#c7e8b2'); }
     for (const zone of [...g.zones, ...(g.oilZone?[g.oilZone]:[]), ...(g.flags.agentEntered?[]:g.agentZone?[g.agentZone]:[]), ...(g.embassy?[g.embassy]:[]), ...(g.palaceZone&&!g.flags.palaceEntered?[g.palaceZone]:[])]) {
       if ((zone.kind==='agent' && !g.flags.trapdoorOpen) || (zone.kind==='palace' && g.stage<6)) continue;
       ring(zone.x,zone.y,42,'#abc98c');sprite(3,zone.x,zone.y,100);label(zone.label,zone.x,zone.y+35,'#d1e8ac');
     }
-    for (const person of g.people) if (!person.rescued&&!person.dead&&!person.hidden) {
+    for (const person of g.people) if (!person.rescued&&!person.dead&&!person.hidden&&visible(person,60)) {
       DesertArt.person(ctx,person.x,person.y,g.time,person.role);
       if(person.captive){DesertArt.person(ctx,person.x-18,person.y,g.time,'soldier');DesertArt.person(ctx,person.x+18,person.y,g.time,'soldier');label('COPILOT CAPTIVE — HOLD FIRE',person.x,person.y-20,'#ffad77');}
       if(distance(p,person)<100)label(person.role.toUpperCase(),person.x,person.y+18,'#f4dd8b');
@@ -123,7 +124,7 @@
     if(g.bus){prop('bus',g.bus.x,g.bus.y,g.bus);label(g.bus.arrived?'OFFICIALS SAFE':`BUS: ${g.bus.boarded}/12 ABOARD`,g.bus.x,g.bus.y+56);}
     for(const tank of g.oilTanks||[]){prop('oil',tank.x,tank.y,tank);label('OIL '+Math.max(0,Math.ceil(tank.hp)),tank.x,tank.y+60);}
     for (const e of g.enemies) {
-      if(e.hidden)continue;
+      if(e.hidden||!visible(e))continue;
       ctx.save();if(e.hp<=0){ctx.globalAlpha=.45;ctx.filter='grayscale(1) brightness(.4)';}
       const original=DesertArt.object(ctx,e,g.time);ctx.restore();
       if(original){
@@ -185,7 +186,7 @@
   }
   let ground=null,groundLevel=-1;
   function buildGround(){
-    if(ready){ground=DesertArt.terrain(g.level);groundLevel=g.level;return;}
+    if(ready){ground=DesertArt.terrain(g.level,g.dosBackdrop);groundLevel=g.level;return;}
     const m=g.world;ground=document.createElement('canvas');ground.width=m.width/2;ground.height=m.height/2;
     const c=ground.getContext('2d');c.scale(.5,.5);c.fillStyle=m.color;c.fillRect(0,0,m.width,m.height);
     let seed=71+g.level;const rand=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};

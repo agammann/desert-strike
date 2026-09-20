@@ -110,5 +110,33 @@
       "tiles/23.png",
       "tiles/24.png"
     ]
+  },
+  "suppliedDOS": {
+    "reference": "User-supplied Desert Strike DOS CD edition",
+    "archiveSHA256": "98b73597aae847e5535a461833fe6c61b5a8d2150eee69b61996df98b24e725c",
+    "formatReference": "https://github.com/AMDmi3/openstrike",
+    "files": {
+      "dos-buildings.png": {
+        "bytes": 318657,
+        "sha256": "bcf9614f30f38ccefa694b2ac6ba1b4658e3f44def79c3cbeb91e19890ced931"
+      },
+      "dos-cd_bomb.png": {
+        "bytes": 27291,
+        "sha256": "2a62ac4a21c32418a086350fc4fd8e57f1b9434e1aac28888b64343c283f9aac"
+      },
+      "dos-cd_truck.png": {
+        "bytes": 7406,
+        "sha256": "2315daf59be90a0b5350c0ec7dde862a3bc902c0a7891ed49c1321c5e4dc76f3"
+      },
+      "dos-pickups.png": {
+        "bytes": 1642,
+        "sha256": "82ebc1c4f97d58a20e186693150bc0dfb4d3c6d2f9c9c22fe05f5a423265c989"
+      },
+      "dos-supergun.png": {
+        "bytes": 4595,
+        "sha256": "0916cdf20d48e221d1fcb920d7483f1b01d16fe5250bfa8353e0a6c56dcc5262"
+      }
+    },
+    "notes": "Original game artwork remains outside the MIT code license. Inspection adapter and original executable are not distributed."
   }
 }

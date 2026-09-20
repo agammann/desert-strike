@@ -1,6 +1,6 @@
 # Fidelity ledger
 
-The initial reference was **Desert Strike: Return to the Gulf for Genesis / Mega Drive (1992)**. Version 0.5.2 starts correcting first-campaign objects against a supplied DOS CD edition; its [comparison report](DOS-COMPARISON.md) takes precedence for those objects and records the unimplemented fifth campaign. This recreation runs on its own JavaScript engine. It does not load a ROM or emulate the original executable. A successful campaign test does not establish identical difficulty or frame timing.
+The initial reference was **Desert Strike: Return to the Gulf for Genesis / Mega Drive (1992)**. The current target is the user-supplied **DOS CD edition**, including its fifth campaign, Supergun. **v0.6.0** implements five campaigns and 35 objectives. The [DOS comparison](DOS-COMPARISON.md) takes precedence for decoded object positions, armor and edition-specific rules. This is a standalone JavaScript engine, not a ROM/emulator wrapper or a verified one-to-one port. Tests establish this recreation’s behavior and completion, not identical original difficulty.
 
 ## Documented values
 
@@ -34,18 +34,18 @@ DarkWolf's [Genesis maps on VGMaps](https://www.vgmaps.com/Atlas/Genesis/) suppl
 | [Embassy City reference](https://www.vgmaps.com/Atlas/Genesis/DesertStrike-ReturnToTheGulf-Campaign3.png) | 6144 × 4096 | City road network, northwest biological facilities, embassy, eastern power station, yacht offshore |
 | [Nuclear Storm reference](https://www.vgmaps.com/Atlas/Genesis/DesertStrike-ReturnToTheGulf-Campaign4.png) | 6144 × 4096 | Night palette, northwest runway, oil field, palace, northeast nuclear complex |
 
-These dimensions match the reference images, not a verified internal coordinate system. `src/terrain-data.js` contains the selected tile grids, palette maps and a water boundary sampled every 16 pixels. On a four-pixel sampling grid, reconstructed terrain agreed with reference pixels at 96.69%, 97.03%, 96.04% and 95.95% respectively. The comparison includes reference buildings that are not part of the terrain tiles, so **these are terrain-comparison statistics, not game-fidelity percentages**. The least separated first/second tile candidate differs by 0.78 percentage points; some populated blocks remain ambiguous.
+The DOS level block counts independently confirm these dimensions in stored screen-map coordinates. `src/terrain-data.js` contains the selected tile grids, palette maps and a water boundary sampled every 16 pixels. On a four-pixel sampling grid, reconstructed terrain agreed with reference pixels at 96.69%, 97.03%, 96.04% and 95.95% respectively. The comparison includes reference buildings that are not part of the terrain tiles, so **these are terrain-comparison statistics, not game-fidelity percentages**. The least separated first/second tile candidate differs by 0.78 percentage points; some populated blocks remain ambiguous.
 
-Building, enemy, resource, hidden-object and landing-zone coordinates remain manually placed estimates, except for the first-campaign radars, power station, command centers and 18 airfield objects corrected from DOS records in v0.5.2. Smaller buildings and some encounters are absent. The renderer uses original DOS artwork, with directional helicopter frames and distinct vehicle bodies/turrets. This does not establish identical animation cadence or collision shapes.
+v0.6.0 uses decoded building drawing anchors and dimensions across five campaigns, and corrects the major objective groups listed in the DOS comparison. Ordinary fuel/ammunition/repair anchors and starting positions also come from DOS records. Earlier guards, hidden-object triggers, landing zones and some mission objects remain estimates. Additional building scenery is visual only; its full original destruction and collision behavior is absent. The renderer uses original DOS artwork, with directional helicopter frames and distinct vehicle bodies/turrets. This does not establish identical animation cadence or collision shapes.
 
 ## Gameplay and difficulty changes
 
-- Four full-size tile layouts replace the earlier procedural terrain. The closer camera and longer journeys make map reading and fuel planning more important.
+- Five full-size tile layouts replace the earlier procedural terrain. The closer camera and longer journeys make map reading and fuel planning more important.
 - Mobile ground defenses pursue locally; boats stay on water, and helicopters can cross the coast. Turrets rotate rather than instantly firing in every direction. Their speeds, ranges, pursuit limits and tracking rates are estimates.
 - Supplies are finite and scattered. Hidden caches must be destroyed before their pickups can be recovered. Rescue remains an alternative way to restore armor.
 - Collidable buildings and scenery block the aircraft and inflict armor damage. The manual specifies 10 damage to each participant and a temporary loss of control (printed pp. 12–13). Collision shapes and the 0.35-second interruption are estimates.
 - Standard / With Momentum is the default. Shift plus left/right strafes while preserving heading. From Above and Relaxed remain optional accessibility choices.
-- The 27-objective structure, intelligence chain, timed attacks, hostage rescues, commando landing, oil protection, bus escort and bomber ending are described in [CAMPAIGNS.md](CAMPAIGNS.md).
+- The 35-objective structure, intelligence chain, timed attacks, hostage rescues, commando landing, oil protection, bus escort and bomber ending are described in [CAMPAIGNS.md](CAMPAIGNS.md).
 
 ## Manual comparison corrections in v0.4.0
 
@@ -65,7 +65,9 @@ The printed page numbers below refer to the original Genesis manual linked above
 
 Copilot numeric settings (person pickup seconds / forward aim cone in radians): X-Man 1.6 / 0.12, Aussie 2.2 / 0.24, Tracker 2.8 / 0.38, Mr. D 3.2 / 0.08, Jake 1.4 / 0.42. Without a copilot, pickup takes 3.2 seconds and aim assistance is unavailable. The quick winch uses 0.5 seconds. These values are openly recorded for later calibration. The [roster reference](https://strike-series.fandom.com/wiki/Co-Pilots) is secondary; the manual is the primary evidence for the selection/rescue system.
 
-The illustrated [firsthand Mega Drive playthrough](https://shugames.blogspot.com/2015/10/guia-completo-desert-strike-mega-drive.html) describes helicopter attacks during embassy boarding and armor along the escort route. Those events are now present. The palace escape vehicle now has a travel phase, escorted copilot transfer, bomber boarding, breach and rescue. The occupied vehicle must not be destroyed. Its route, 70-unit/s driving speed, 22-unit/s escort walk and 300 armor are reconstruction choices. An attempted Genesis video reference could not play in this environment; no frame-by-frame video comparison is claimed.
+The embassy boarding attacks and route ambush remain reconstructed encounters. Nuclear Storm’s ATV is indestructible according to the supplied DOS briefing. Follow its journey, wait for the copilot transfer, breach the bomber, rescue the copilot and finish the aircraft. The route, 70-unit/s driving speed and 22-unit/s escorted walk remain estimates. Supergun includes the eight recovered mission roles; its trigger timing, convoy paths, civilian-driver quota and simplified general capture still need a measured original playthrough.
+
+Supergun’s terrain is reconstructed from the 192 × 128 DOS tactical image using the existing terrain tiles. Ambiguous road/city tiles remain approximate. It does not inherit the four Genesis-map pixel agreement statistics above.
 
 ## Timing and scoring in v0.5.0
 
@@ -84,10 +86,10 @@ The source sprite sheets progress north through east to south; western views req
 | Area | Current limitation |
 | :--- | :--- |
 | Difficulty | No side-by-side human run or original-console timing capture has calibrated the overall challenge. An automated pilot proves completion, not equivalent hardness. |
-| Flight and weapons | Speed, acceleration, turning, projectile speeds/ranges, targeting, building armor and player firing cadence are custom values. |
+| Flight and weapons | Speed, acceleration, turning, projectile speeds/ranges, targeting and player firing cadence remain custom values; decoded building armor is listed in the DOS comparison. |
 | Fuel | Standard consumes 0.36 units per second over land; Relaxed uses 0.18. These rates are not measurements of the original. |
 | Timers | SCUD 100/160 s, silo 30/55 s, hostage 100/150 s, bomber 150/240 s in Standard/Relaxed. All are reconstruction settings. |
-| Placement | Guards, supplies and individual objectives have approximate coordinates and counts; not every original object is present. Vehicles now use distinct source sprite frames; their exact Genesis equivalents are unverified. |
+| Placement | Many objective and ordinary supply anchors now come from DOS records. Earlier guards, hidden-object triggers, patrols and some remaining mission objects still use estimates; not every original encounter is present. Vehicles now use distinct source sprite frames; their exact Genesis equivalents are unverified. |
 | Missions | The palace escape and bomber transfer are implemented; path, protection rules and event timing remain unmeasured. Other cinematic events are condensed. |
 | Presentation | Original DOS sprites and eight Mega Drive music tracks are included. Complete cutscenes, every animation state and original passwords are absent. Browser checkpoints replace password entry. No mid-campaign save. |
 | Copilots | Roster and differing roles are implemented; numeric aim cones and pickup durations are estimates, not extracted values. |

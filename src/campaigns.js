@@ -5,6 +5,7 @@
     { name: 'Scud Buster', text: 'Free political prisoners, stop chemical production, capture SCUD commanders, and recover the POWs.' },
     { name: 'Embassy City', text: 'Rescue the inspectors, stop biological missiles, recover the yacht hostages, and escort the embassy bus.' },
     { name: 'Nuclear Storm', text: 'Protect the oil fields and stop the spills. Further orders arrive as the operation unfolds.' },
+    { name: 'Supergun', text: 'Follow the spies’ intelligence, intercept gun parts, dismantle the supergun complex, and capture General Carranza alive.' },
   ];
   const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
   const alive = e => e.hp > 0 && !e.hidden;
@@ -112,7 +113,7 @@
       evacuation(g,"Madman’s yacht",'Breach the yacht and winch hostages before they drown. Deliver at least 7; lose no more than 5.','hostage',7,'yacht');
       task(g,'Enemy ambassador','Destroy all four command buildings and capture the ambassador.',()=>destroyed(g,'ambassador')===4&&captured(g,'ambassador')===1,()=>[...g.people.filter(p=>p.role==='ambassador'&&waiting(p)),...g.enemies.filter(e=>e.group==='ambassador'&&alive(e))]);
       task(g,'Embassy rescue','Land at the embassy. Protect all twelve officials while they board, clear the gate, and escort the bus through the ambush.',()=>g.bus.arrived,()=>g.bus.active?[...g.enemies.filter(e=>e.group==='bus-route'&&alive(e)),g.bus]:[g.embassy]);
-    } else {
+    } else if (g.level === 3) {
       people(g,930,1580,'commando',6);
       g.oilZone={x:1490,y:1680,kind:'oil',label:'COMMANDO LZ'};
       g.oilTanks=[{x:1400,y:1530,hp:600},{x:1630,y:1530,hp:600},{x:1400,y:1870,hp:600}];
@@ -125,20 +126,44 @@
       site(1830,1710,'palace','palace',{hidden:true});
       g.palaceZone={x:1830,y:1830,kind:'palace',label:'LAND: PALACE'};
       site(1200,400,'bomber','bomber',{hidden:true});
-      site(1830,1710,'atv','escape-vehicle',{hidden:true,hp:300,maxHp:300,civilian:true,occupied:true});
+      site(1830,1710,'atv','escape-vehicle',{hidden:true,hp:300,maxHp:300,civilian:true,occupied:true,indestructible:true});
       task(g,'Oil fields','Collect all six commandos for the one-use landing zone. Destroy the tanks attacking the oil storage.',()=>g.flags.commandos===6&&destroyed(g,'oil-enemies')===3,()=>[...g.enemies.filter(e=>e.group==='oil-enemies'&&alive(e)),...g.people.filter(p=>p.role==='commando'&&waiting(p)),...(g.passengers.some(p=>p.role==='commando')?[g.oilZone]:[])]);
       demolition(g,'Oil spills','Hit the small pipe ends to seal all three spills.','pipes');
       evacuation(g,'Bomb shelters','Open four shelters and deliver at least 15 of the 16 civilians.','civilian',15,'shelters');
       demolition(g,'Bomb parts','Inspect the trucks: red bomb cargo is a target; green civilian cargo must survive.','bomb-trucks');
-      task(g,'Nuclear plant','Destroy the weapons plant and cooling towers; capture the scientist.',()=>destroyed(g,'nuclear')===3&&captured(g,'scientist')===1,()=>[...g.people.filter(p=>p.role==='scientist'&&waiting(p)),...g.enemies.filter(e=>e.group==='nuclear'&&alive(e))]);
+      task(g,'Nuclear plant','Destroy the weapons plant, its annex and cooling towers; capture the scientist.',()=>destroyed(g,'nuclear')===total(g,'nuclear')&&captured(g,'scientist')===1,()=>[...g.people.filter(p=>p.role==='scientist'&&waiting(p)),...g.enemies.filter(e=>e.group==='nuclear'&&alive(e))]);
       demolition(g,'Power station','Cut power to the presidential palace.','power');
       task(g,'Presidential palace','Breach the palace and land at the marked entrance to send in your copilot.',()=>!!g.flags.palaceEntered,()=>destroyed(g,'palace')?[g.palaceZone]:g.enemies.filter(e=>e.group==='palace'&&alive(e)));
-      task(g,'Nuclear bomber','Follow the escape vehicle; hold fire while your copilot is aboard. Destroy the empty ATV at the airstrip, breach the bomber, rescue your copilot, then finish the aircraft.',()=>destroyed(g,'escape-vehicle')===1&&destroyed(g,'bomber')===1&&g.copilot,()=>[...g.people.filter(p=>p.role==='copilot'&&waiting(p)),...g.enemies.filter(e=>['escape-vehicle','bomber'].includes(e.group)&&alive(e))]);
+      task(g,'Nuclear bomber','Follow the indestructible ATV to the airstrip. Breach the bomber, rescue your copilot, then finish the aircraft.',()=>destroyed(g,'bomber')===1&&g.copilot,()=>[...g.people.filter(p=>p.role==='copilot'&&waiting(p)),...g.enemies.filter(e=>e.group==='bomber'&&alive(e))]);
+    } else if (g.level === 4) {
+      // Locations are DOS object anchors. Trigger timing is reconstructed; see DOS-COMPARISON.md.
+      people(g,4882,2719,'spy contact',1,{expires:240});
+      people(g,5954,3602,'spy',1,{hidden:true});
+      for(const [x,y] of [[4396,160],[4608,592],[5210,912]])site(x,y,'transport','airfields',{hidden:true,hp:200});
+      for(const [x,y] of [[4296,278],[5220,932],[4176,1104],[3348,1772],[5712,1616]])site(x,y,'convoy','gun-parts',{hidden:true,hp:200,...release('driver'),destination:{x:2809,y:930}});
+      site(3465,2703,'office','official',{hidden:true,...release('official',1,{requiresCash:true})});
+      supply(g,3450,2812,'cash');g.supplies.at(-1).hidden=true;
+      for(const [x,y] of [[1537,79],[1880,343]])site(x,y,'supergun','superguns',{hidden:true,hp:400});
+      site(5057,3954,'power','power',{hidden:true});
+      site(2290,1802,'palace','palace',{hidden:true,...release('double')});
+      site(211,2385,'yacht','general-yacht',{hidden:true});
+      task(g,'Spy','Rescue the contact at the nomad camp, then recover his brother from the convoy southeast of the camp.',()=>captured(g,'spy')===1,()=>g.people.filter(p=>['spy contact','spy'].includes(p.role)&&waiting(p)));
+      demolition(g,'Airfield','Destroy both airport clusters and all three transports carrying supergun parts. Radar sites protect the airfield.','airfields');
+      task(g,'Gun parts','Stop all five parts trucks before they reach the factories. Winch all five civilian drivers to recover their intelligence.',()=>destroyed(g,'gun-parts')===5&&captured(g,'driver')===5,()=>[...g.people.filter(p=>p.role==='driver'&&waiting(p)),...g.enemies.filter(e=>e.group==='gun-parts'&&alive(e))]);
+      task(g,'Bribe official','Recover the cash case east of the city, open the official’s building, and winch him aboard to buy the defense information.',()=>!!g.flags.bribePaid,()=>[...g.supplies.filter(s=>s.kind==='cash'&&!s.used&&!s.hidden),...g.people.filter(p=>p.role==='official'&&waiting(p)),...g.enemies.filter(e=>e.group==='official'&&alive(e))]);
+      demolition(g,'Supergun site','Destroy the eight factories and both mountain gun emplacements. Their radar controllers are south and east of the complex.','superguns');
+      demolition(g,'Power station','Cut the power protecting the general’s palace.','power');
+      task(g,'General’s palace','Destroy the palace and its defenses, then capture the man who emerges.',()=>destroyed(g,'palace')===1&&destroyed(g,'palace-defense')===total(g,'palace-defense')&&captured(g,'double')===1,()=>[...g.people.filter(p=>p.role==='double'&&waiting(p)),...g.enemies.filter(e=>['palace','palace-defense'].includes(e.group)&&alive(e))]);
+      task(g,'General’s yacht','The palace prisoner was a double. Breach the yacht, stop firing, and capture Carranza alive. Deliver him to the frigate for trial.',()=>delivered(g,'general')===1,()=>[...g.people.filter(p=>p.role==='general'&&waiting(p)),...g.enemies.filter(e=>e.group==='general-yacht'&&alive(e))]);
     }
     tell(g, g.tasks[0].hint);
   }
   function reveal(g, group) { g.enemies.filter(e=>e.group===group||e.revealWith===group).forEach(e=>e.hidden=false); }
   function onRescue(g, p) {
+    if(p.role==='spy contact'){g.people.filter(h=>h.role==='spy').forEach(h=>h.hidden=false);tell(g,'The contact’s brother is held with the convoy southeast of the nomad camp.');}
+    if(p.role==='spy')reveal(g,'airfields');
+    if(p.role==='official'&&g.flags.cash){g.flags.bribePaid=true;g.flags.cash=false;tell(g,'Intelligence bought: disable the radars south and east of the supergun complex.');}
+    if(p.role==='double'){reveal(g,'general-yacht');tell(g,'A decoy! Carranza fled to his yacht. Capture him alive.');}
     if(p.role==='commander')reveal(g,'agent');
     if(p.role==='scud commander') {
       const e=g.enemies.find(e=>e.group==='scuds'&&e.intel===p.intel);e.hidden=false;e.deadline=g.time+(g.difficulty==='story'?160:100);
@@ -149,16 +174,18 @@
     if(p.role==='copilot')g.copilot=true;
   }
   function onDestroy(g, e) {
-    if(e.kind==='atv'&&e.occupied){fail(g,'Your copilot was still inside the escape vehicle. Hold fire until he disembarks.');return;}
+    if(e.indestructible){e.hp=e.maxHp;return;}
     if(e.release)people(g,e.x,e.y+65,e.release.role,e.release.count,e.release);
     if(e.cache){const s=g.supplies.find(s=>s.id===e.supplyId);if(s)s.hidden=false;}
+    for(const id of e.revealsSupplies||[]){const s=g.supplies.find(s=>s.id===id);if(s)s.hidden=false;}
     if(e.trapdoor){g.flags.trapdoorOpen=true;tell(g,'Trapdoor exposed. Land at the marked entrance.');}
     if(e.kind==='power')supply(g,e.x,e.y,'repair');
-    if(e.kind==='yacht'){g.flags.yachtOpen=true;g.flags.nextHostage=g.time;g.flags.hostages=0;}
+    if(e.kind==='yacht'&&g.level===2){g.flags.yachtOpen=true;g.flags.nextHostage=g.time;g.flags.hostages=0;}
+    if(e.group==='general-yacht'){people(g,e.x+95,e.y+60,'general',1);tell(g,'Carranza is in the water. HOLD FIRE and winch him aboard for trial.');}
     if(e.civilian && destroyed(g,'decoys')>1)fail(g,'Two civilian trucks destroyed. The operation has failed.');
   }
   function onHit(g,e,damage) {
-    if(e.covered && e.hp<=0) {e.covered=false;e.kind='silo';e.hp=180;e.maxHp=180;e.deadline=g.time+(g.difficulty==='story'?55:30);tell(g,'Silo exposed. Stop the launch!');return true;}
+    if(e.covered && e.hp<=0) {e.covered=false;e.kind='silo';e.hp=200;e.maxHp=200;e.deadline=g.time+(g.difficulty==='story'?55:30);tell(g,'Silo exposed. Stop the launch!');return true;}
     if(e.kind==='bomber'&&e.hp<=1000&&!g.flags.copilotEscaped) {
       g.flags.copilotEscaped=true;
       const h=g.people.find(p=>p.role==='copilot'&&p.captive);
@@ -170,7 +197,7 @@
   }
   function killPerson(g,p) {
     if(p.rescued||p.dead||p.hidden)return;p.dead=true;score(g,'penalties',-500);tell(g,'Personnel lost. Check the mission requirements.');
-    if(['agent','copilot','ambassador','lead chemist','scientist','commando'].includes(p.role))fail(g,'Essential personnel lost. Retry the operation.');
+    if(['agent','copilot','ambassador','lead chemist','scientist','commando','spy contact','spy','driver','official','double','general'].includes(p.role))fail(g,p.role==='general'?'Carranza had to be captured alive for trial. Operation failed.':'Essential personnel lost. Retry the operation.');
   }
   function unload(g, zone) {
     if(zone.kind==='oil') {
@@ -180,7 +207,7 @@
       if(squad.length<6){fail(g,'The one-use oil-field landing zone needed all six commandos together.');return;}
       squad.forEach(p=>p.delivered=true);g.passengers=g.passengers.filter(p=>p.role!=='commando');tell(g,'Commandos deployed. Protect the oil storage.');
     } else {
-      const canExit=p=>p.role!=='commando'&&(p.role!=='Valdez'||zone.kind==='base');
+      const canExit=p=>p.role!=='commando'&&(!['Valdez','general'].includes(p.role)||zone.kind==='base');
       const exiting=g.passengers.filter(canExit);
       exiting.forEach(p=>p.delivered=true);g.passengers=g.passengers.filter(p=>!canExit(p));
       if(exiting.some(p=>p.role==='Valdez')){g.jakeUnlocked=true;tell(g,'Valdez is safe. Jake is available for your next operation.');}
@@ -246,9 +273,9 @@
         vehicle.heading=Math.atan2(t.y-vehicle.y,t.x-vehicle.x);
         if(d>0){vehicle.x+=(t.x-vehicle.x)/d*travel;vehicle.y+=(t.y-vehicle.y)/d*travel;}
         if(d<=travel+.01&&++vehicle.waypoint===vehicle.path.length){
-          vehicle.occupied=false;vehicle.civilian=false;g.flags.transfer=true;
+          vehicle.occupied=false;g.flags.transfer=true;
           people(g,vehicle.x-30,vehicle.y-45,'copilot',1,{captive:true});
-          tell(g,'ATV empty. Your copilot is being taken to the bomber. Keep fire clear of the escort.');
+          tell(g,'Your copilot is being taken to the bomber. The ATV cannot be destroyed. Keep fire clear of the escort.');
         }
       }
       if(g.flags.transfer&&!g.flags.bomberBoarded){
@@ -259,11 +286,23 @@
         }
       }
     }
+    if(g.level===4){
+      if(g.stage>=2&&!g.flags.convoyMoving){g.flags.convoyMoving=true;tell(g,'Parts convoy moving toward the factories. Stop the trucks and rescue their drivers.');}
+      for(const e of g.enemies.filter(e=>e.kind==='convoy'&&alive(e))){
+        if(!g.flags.convoyMoving)continue;
+        const d=dist(e,e.destination),travel=Math.min(d,12*dt);
+        e.heading=Math.atan2(e.destination.y-e.y,e.destination.x-e.x);
+        if(d>0){e.x+=(e.destination.x-e.x)/d*travel;e.y+=(e.destination.y-e.y)/d*travel;}
+        if(d<=travel+.01)fail(g,'A parts truck reached the supergun factories. Intercept the convoy sooner.');
+      }
+      if(g.stage>=3)g.supplies.filter(s=>s.kind==='cash').forEach(s=>s.hidden=false);
+    }
     if(g.status!=='playing')return;
     g.tasks.forEach(t=>{if(!t.done&&t.test())t.done=true;});
     const next=g.tasks.findIndex(t=>!t.done), stage=next<0?g.tasks.length:next;
     if(stage!==g.stage){g.stage=stage;tell(g,stage===g.tasks.length?'Objectives complete. Return to the frigate.':g.tasks[stage].hint);}
     if(g.level===3){const groups=[['oil-enemies'],['pipes'],['shelters'],['bomb-trucks','decoys'],['nuclear'],['power'],['palace'],[]];for(let i=0;i<=Math.min(g.stage,7);i++)groups[i].forEach(group=>reveal(g,group));}
+    if(g.level===4){const groups=[[],['airfields','airfield-radar'],['gun-parts'],['official'],['superguns','supergun-radar'],['power'],['palace','palace-defense'],['general-yacht']];for(let i=0;i<=Math.min(g.stage,7);i++)groups[i].forEach(group=>reveal(g,group));}
     if(g.status==='playing'&&g.stage===g.tasks.length&&dist(p,g.base)<85&&slow){g.status='won';tell(g,'Campaign complete. All required missions accomplished.');}
   }
   function objective(g) {
@@ -273,9 +312,11 @@
     if(g.level===3&&g.stage===7){
       const copilot=g.people.find(p=>p.role==='copilot'&&waiting(p));if(copilot)return copilot;
       const vehicle=g.enemies.find(e=>e.kind==='atv'&&alive(e));
-      if(vehicle)return vehicle.occupied?{x:vehicle.x+110,y:vehicle.y-100,kind:'follow'}:vehicle;
+      if(vehicle?.occupied)return {x:vehicle.x+110,y:vehicle.y-100,kind:'follow'};
       if(!g.flags.bomberBoarded){const h=g.people.find(p=>p.role==='copilot'&&p.captive);if(h)return {x:h.x+130,y:h.y+120,kind:'follow'};}
     }
+    if(g.level===4&&g.stage===7&&captured(g,'general'))return g.base;
+    if(g.level===4&&g.stage===3&&!g.flags.cash){const cash=g.supplies.find(s=>s.kind==='cash'&&!s.used);if(cash&&!cash.hidden)return cash;}
     if(g.level===2&&g.stage===7&&g.bus.active){const blockers=g.enemies.filter(e=>e.group==='bus-route'&&alive(e)&&dist(e,g.bus)<240);targets=blockers.length?blockers:[g.bus];}
     const active=g.enemies.filter(e=>alive(e)&&e.deadline).sort((a,b)=>a.deadline-b.deadline);
     if(active.length)targets=[active[0]];

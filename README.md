@@ -1,12 +1,12 @@
 # Desert Strike: Return to the Gulf
 
-A standalone recreation of the 1992 helicopter game, built by **agammann** with a custom JavaScript game engine, original DOS sprite artwork and Mega Drive music. Play through 27 mission objectives across the original four-campaign structure: intelligence captures, timed missile interceptions, rescues, the embassy bus escort, and the final bomber attack.
+A standalone recreation by **agammann**, with a custom JavaScript engine, original DOS artwork and Mega Drive music. Play **35 objectives across all five campaigns in the supplied DOS CD edition**, including Supergun: intelligence captures, missile interceptions, rescues, the embassy bus escort, the nuclear bomber, and the capture of General Carranza.
 
 **[Play now on Sites](https://desert-strike.alx21.chatgpt.site/)** · **[GitHub Pages](https://agammann.github.io/desert-strike/)** · **[Download the offline game](https://github.com/agammann/desert-strike/releases/latest/download/Desert-Strike-offline.zip)** · **[Get the source](https://github.com/agammann/desert-strike/archive/refs/heads/main.zip)**
 
 No ROM, emulator, account, installation, or runtime download is needed. The offline release is one self-contained HTML game that opens in a modern browser.
 
-**Fidelity status:** this is an unfinished recreation, not a one-to-one replacement. The supplied DOS CD edition includes a fifth campaign, **Supergun**, which is not yet implemented. Version 0.5.2 corrects confirmed first-campaign placements, target counts and armor values. See the [DOS comparison](docs/DOS-COMPARISON.md) and [remaining differences](docs/FIDELITY.md).
+**Fidelity status:** v0.6.0 is a playable five-campaign recreation, with more objective positions, armor values, supply locations and building artwork taken from the supplied DOS data. It is **not a verified one-to-one port**: movement, enemy scripts, scoring and some map details still differ or remain unmeasured. See the [DOS comparison](docs/DOS-COMPARISON.md) and [fidelity ledger](docs/FIDELITY.md).
 
 ![Desert Strike recreation: pixel-art helicopter approaching radar defenses, a landing zone, tactical map and aircraft instruments](docs/gameplay.png)
 
@@ -62,18 +62,19 @@ Follow the **current mission** and numbered checklist beside the battlefield. Th
 | Scud Buster | 6 | Jail break, chemical complex, timed SCUD launches, POW rescue |
 | Embassy City | 8 | Inspectors, biological silos, sea/yacht rescues, ambassador, bus escort |
 | Nuclear Storm | 8 | Commandos, oil spills, shelters, bomb trucks, nuclear plant, palace, bomber |
+| Supergun | 8 | Spy chain, airport, parts convoy, bribe, factories and guns, palace decoy, capture alive |
 
 Read **[the campaign guide](docs/CAMPAIGNS.md)** for every objective, rescue threshold, timer and failure condition.
 
-## How close is it to the 1992 game?
+## How close is it to the original?
 
-**Version 0.5.1 fixes directional rendering:** the Apache now faces its shots in all directions, including mirrored westward views. Enemy turret headings, helicopter frames, vehicle mirroring, bus route-facing and a tank wreck-frame selection are corrected. Player tracers use the same visual height as the aircraft.
+**v0.6.0 targets the supplied DOS CD edition**, which adds Supergun to the four-campaign game originally released in 1992. The fifth campaign follows the mission text recovered from that edition. Airport buildings, factories, gun emplacements, the official’s office, power station, palace and yacht use its object anchors.
 
-Version **0.5.0** added original sprite sheets, eight original music tracks, tile-based terrain reconstructed from the four map references, and the palace escape vehicle. Follow the occupied ATV to the airstrip, wait until your copilot disembarks, destroy the empty vehicle, breach the bomber, rescue him, and finish the aircraft. The nuclear complex now has two radar controllers and five Crotales. The final campaign has three hidden extra lives.
+The update also corrects earlier objectives—including Scud Buster’s chemical plant and power station—uses DOS fuel/ammunition/repair coordinates, and renders the original building scenery at its stored size and position. The palace ATV is indestructible, as described by the DOS briefing: follow the transfer, breach the bomber, recover the copilot, and finish the aircraft. The helicopter’s corrected directional rendering is retained.
 
-The simulation runs at **60 fixed updates per second** across different display frame rates. Scoring no longer rewards destroyed civilian trucks or scenery; bonus rescues and penalties appear in the completion report. Original numeric scoring and original-console movement timing remain unverified.
+The engine uses **60 fixed updates per second**. All five campaigns have automated completion tests in Standard and Relaxed. This demonstrates that this implementation can be completed; it does not establish identical original difficulty.
 
-It is **not a verified one-to-one port**. The terrain grid is matched against map captures, but building, enemy and supply positions, flight coefficients, weapon ranges, mission timers, copilot assistance and encounter timing still include estimates. The supplied artwork is from the DOS version; the music is from the Mega Drive version. Some props and sound effects remain custom, and the complete original cutscenes and animations are absent. Browser checkpoints replace password entry; there is no mid-campaign save. See the **[fidelity ledger](docs/FIDELITY.md)** for sources, measurements and remaining differences. Passing a playthrough establishes completion, not identical original difficulty.
+Exact flight coefficients, numeric scoring, patrols, collision geometry, rescue timing and mission deadlines remain unverified. Extra scenery currently serves as a visual backdrop; only mission objects and supply covers participate in combat. The first four terrain grids retain the Genesis-based reconstruction; Supergun’s grid is reconstructed from the DOS tactical map. Original DOS music, complete cinematics and passwords are not implemented. Supergun currently reuses the fourth Mega Drive briefing track. The [fidelity ledger](docs/FIDELITY.md) records these limitations explicitly.
 
 Desert Strike: Return to the Gulf is Electronic Arts' original title. This is an unofficial fan recreation, not affiliated with or endorsed by Electronic Arts. No ROM, emulator or original executable is included. **Original artwork and music are not covered by the code's MIT license.** See **[artwork and music credits](THIRD_PARTY.md)** for the creators, extraction credits and source links.
 

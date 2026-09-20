@@ -1,11 +1,11 @@
 (function(root){
   'use strict';
   // Unmodified DarkWolf sprite sheets. Frame rectangles omit the sheet's guide lines.
-  const names=['apache','enemies','allies','other','people','buildings','structures','objectives','natural'];
+  const names=['apache','enemies','allies','other','people','buildings','structures','objectives','natural','dos-buildings','dos-supergun','dos-cd_truck','dos-cd_bomb','dos-pickups'];
   for(let i=0;i<25;i++)names.push('tile'+String(i).padStart(2,'0'));
   const images={};
   const ready=Promise.all(names.map(name=>{const image=new Image();images[name]=image;image.src=root.GULF_ASSETS?.[name]||`assets/original/${name.startsWith('tile')?'tiles/'+name.slice(4):name}.png`;return image.decode();}));
-  function terrain(level){
+  function terrain(level,backdrop=[]){
     const layout=root.DesertTerrain[level],out=document.createElement('canvas');out.width=6144;out.height=layout.tiles.length*512;
     const c=out.getContext('2d'),palette=new Map(Object.entries(layout.palette).map(([key,rgb])=>{const [r,g,b]=key.split(',').map(Number);return [(r<<16)|(g<<8)|b,rgb];}));
     const tiles=Array.from({length:25},(_,i)=>{const tile=document.createElement('canvas');tile.width=tile.height=512;const t=tile.getContext('2d');t.drawImage(images['tile'+String(i).padStart(2,'0')],0,0);
@@ -13,7 +13,8 @@
       for(let p=0;p<d.length;p+=4){const rgb=palette.get((d[p]<<16)|(d[p+1]<<8)|d[p+2]);if(rgb){d[p]=rgb[0];d[p+1]=rgb[1];d[p+2]=rgb[2];}}
       t.putImageData(pixels,0,0);return tile;
     });
-    layout.tiles.forEach((row,y)=>row.forEach((id,x)=>c.drawImage(tiles[id],x*512,y*512)));return out;
+    layout.tiles.forEach((row,y)=>row.forEach((id,x)=>c.drawImage(tiles[id],x*512,y*512)));
+    backdrop.forEach(o=>building(c,o));return out;
   }
   function frame(ctx,name,r,x,y,scale=1,flip=false){
     const image=images[name];if(!image?.naturalWidth)return;
@@ -29,12 +30,20 @@
   function direction(angle,count){return ((Math.round((angle+Math.PI/2)*count/(Math.PI*2))%count)+count)%count;}
   function person(ctx,x,y,time,role){
     const row=['civilian','hostage','inspector'].includes(role)?10:role==='copilot'?12:0;
-    frame(ctx,'people',[16+(Math.floor(time*5)%4)*48,16+row*64,48,48],x,y,1.5);
+    frame(ctx,'people',[16+(Math.floor(time*5)%4)*48,16+row*64,48,48],x,y,1);
   }
+  function building(ctx,o){if(!o?.rect)return;ctx.drawImage(images['dos-buildings'],...o.rect,o.sx,o.sy,o.rect[2],o.rect[3]);}
+  function pickup(ctx,s){const index={fuel:0,ammo:1,repair:2,winch:6,life:3,cash:5}[s.kind],r=root.DesertDOS.specialFrames.PICKUPS[index];if(r)frame(ctx,'dos-pickups',r,s.x,s.y);}
   function object(ctx,e,time){
+    if(e.dosArtwork?.rect){building(ctx,e.dosArtwork);return true;}
     const kind=e.weapon||e.kind;let name='objectives',r,scale=1;
     const dir=direction(e.heading||0,8),turretDir=direction(e.heading||0,24);
     const col=dir<=4?dir:8-dir,flip=dir>4;
+    if(['supergun','convoy','transport'].includes(kind)){
+      const key={supergun:'SUPERGUN',convoy:'CD_TRUCK',transport:'CD_BOMB'}[kind],frames=root.DesertDOS.specialFrames[key];
+      const index=kind==='supergun'?(e.hp<=0?1:0):kind==='convoy'?Math.min(col,4):(e.hp>0?3:0);
+      frame(ctx,'dos-'+key.toLowerCase(),frames[index],e.x,e.y,1,kind==='convoy'&&flip);return true;
+    }
     if(e.weapon){
       name='enemies';
       const vehicles={vda:[[16,80,80,80],[16,176,48,48]],zsu:[[16,240,80,80],[16,336,80,80]],m48:[[16,832,48,48],[272,832,48,48]],crotale:[[16,768,48,48],[272,768,48,48]]};
@@ -58,5 +67,5 @@
     if(['power','plant','palace','yacht','bomber','airfield','chemical','oil'].includes(kind))scale*=.65;
     frame(ctx,name,r,e.x,e.y,scale,['bus','atv'].includes(kind)&&flip);return true;
   }
-  root.DesertArt={ready,frame,apache,person,object,terrain};
+  root.DesertArt={ready,frame,apache,person,object,terrain,building,pickup};
 })(globalThis);

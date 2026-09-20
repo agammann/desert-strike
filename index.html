@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#141b19">
-  <meta name="description" content="Pilot a rescue helicopter across four desert campaigns. An unofficial standalone recreation by agammann. No ROM or emulator required.">
+  <meta name="description" content="Pilot a rescue helicopter across five desert campaigns. An unofficial standalone recreation by agammann. No ROM or emulator required.">
   <title>Desert Strike: Return to the Gulf</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23141b19'/%3E%3Cpath d='M10 12h44v8H18v24h28v-8H30v-8h24v24H10z' fill='%23f4a34e'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="src/style.css">
@@ -20,8 +20,8 @@
         <div class="briefing">
           <p class="operation" id="overlay-kicker">FLIGHT BRIEFING</p>
           <h2 id="overlay-title">Bring everyone<br>home.</h2>
-          <p id="overlay-copy">Follow the briefing through 27 missions: capture intelligence, protect rescues, manage supplies, and return to the frigate.</p>
-          <div id="setup"><label>Operation<select id="mission"><option value="0">01 — Air Superiority</option><option value="1">02 — Scud Buster</option><option value="2">03 — Embassy City</option><option value="3">04 — Nuclear Storm</option></select></label><label>Flight mode<select id="difficulty"><option value="standard" selected>Standard — original weapon values</option><option value="story">Relaxed — less damage, more fuel</option></select></label><label>Controls<select id="controls"><option value="momentum" selected>With Momentum — turn and thrust</option><option value="cockpit">From Cockpit — direct throttle</option><option value="above">From Above — compass movement + mouse aim</option></select></label></div>
+          <p id="overlay-copy">Follow the briefing through 35 missions: capture intelligence, protect rescues, manage supplies, and return to the frigate.</p>
+          <div id="setup"><label>Operation<select id="mission"><option value="0">01 — Air Superiority</option><option value="1">02 — Scud Buster</option><option value="2">03 — Embassy City</option><option value="3">04 — Nuclear Storm</option><option value="4">05 — Supergun</option></select></label><label>Flight mode<select id="difficulty"><option value="standard" selected>Standard — original weapon values</option><option value="story">Relaxed — less damage, more fuel</option></select></label><label>Controls<select id="controls"><option value="momentum" selected>With Momentum — turn and thrust</option><option value="cockpit">From Cockpit — direct throttle</option><option value="above">From Above — compass movement + mouse aim</option></select></label></div>
           <div id="copilot-setup"><label>Copilot<select id="copilot"><option value="xman">X-Man — fast winch</option><option value="aussie">Aussie — balanced</option><option value="tracker">Tracker — strong gunnery</option><option value="mrd">Mr. D — challenging</option><option value="jake" disabled>Jake — missing in action</option></select></label><p id="copilot-hint">Rescue Valdez and deliver him to the frigate to unlock Jake.</p></div>
           <button id="launch" class="primary" disabled>Loading flight deck…</button>
           <button id="continue" class="secondary" hidden>Continue campaign</button>
@@ -42,5 +42,5 @@
   <footer><span><kbd>W A S D</kbd> Fly / turn</span><span><kbd>Click / J</kbd> Fire</span><span><kbd>K / Space</kbd> Hydras</span><span><kbd>L</kbd> Hellfires</span><span><kbd>Shift</kbd> Strafe</span><span><kbd>M</kbd> Map</span><span><kbd>P</kbd> Pause</span></footer>
   <div class="credits">An unofficial recreation by <a href="https://github.com/agammann" target="_blank" rel="noreferrer">agammann</a><a href="https://github.com/agammann/desert-strike/releases/latest/download/Desert-Strike-offline.zip">Download offline</a><a href="https://github.com/agammann/desert-strike" target="_blank" rel="noreferrer">Source &amp; instructions</a></div>
 </main>
-<script src="src/terrain-data.js"></script><script src="src/reference.js"></script><script src="src/campaigns.js"></script><script src="src/simulation.js"></script><script src="src/original-art.js"></script><script src="src/game.js"></script>
+<script src="src/dos-data.js"></script><script src="src/dos-reference.js"></script><script src="src/terrain-data.js"></script><script src="src/reference.js"></script><script src="src/campaigns.js"></script><script src="src/simulation.js"></script><script src="src/original-art.js"></script><script src="src/game.js"></script>
 </body></html>

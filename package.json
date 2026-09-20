@@ -1,9 +1,15 @@
 {
   "name": "desert-strike",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "private": true,
   "description": "A standalone Desert Strike fan recreation by agammann",
-  "scripts": { "start": "node scripts/serve.mjs", "build": "node scripts/build.mjs", "test": "node --test tests/campaigns.test.cjs" },
-  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/campaigns.test.cjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "license": "MIT"
 }

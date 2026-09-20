@@ -22,7 +22,7 @@
   function message(g, text, seconds = 4) { g.message = text; g.messageTime = seconds; }
   function burst(g, x, y, kind) { g.effects.push({ x, y, kind, life: .65, maxLife: .65 }); g.events.push(kind); }
   function damageObject(g,e,amount){
-    if(!(e.hp>0))return;
+    if(!(e.hp>0)||e.indestructible)return;
     e.hp-=amount;
     const changed=Campaigns.onHit(g,e,amount);
     burst(g,e.x,e.y,e.hp<=0?'explosion':'spark');
@@ -87,7 +87,7 @@
       if(g.service>=.8){Campaigns.unload(g,zone); if(atBase&&g.difficulty==='story'){p.ammo=1178;p.rockets=38;p.hellfires=8;}}
     } else g.service=0;
     if (Math.hypot(p.vx, p.vy) < (input.winch ? 80 : 35)) {
-      const person = g.people.find(h => Campaigns.waiting(h) && distance(h, p) < 28);
+      const person = g.people.find(h => Campaigns.waiting(h) && (!h.requiresCash||g.flags.cash) && distance(h, p) < 28);
       const supply = g.supplies.find(s => !s.used && !s.hidden && distance(s, p) < 32);
       const target=person&&p.crew<6?person:supply;
       if(g.winchTarget!==target){g.winch=0;g.winchTarget=target;}
@@ -98,7 +98,7 @@
         if (g.winch >= g.winchDuration) { person.rescued = true; g.passengers.push(person); p.crew=g.passengers.length; g.winch = 0; Campaigns.score(g,'rescues',150); g.events.push('rescue'); message(g,person.role==='Valdez'?'Valdez aboard. Deliver him to the frigate to unlock Jake.':p.crew === 6 ? 'Cabin full. Return to base to deliver the crew.' : 'Personnel aboard. Hover to winch the next survivor.'); Campaigns.onRescue(g,person); }
       } else if (supply) {
         g.winch += dt;
-        if (g.winch >= g.winchDuration) { supply.used = true; g.winch = 0; if (supply.kind === 'fuel') p.fuel = 100; if (supply.kind === 'ammo') { p.ammo = 1178; p.rockets = 38; p.hellfires = 8; } if (supply.kind === 'repair') p.armor = 600; if(supply.kind==='winch')g.quickWinch=true; if(supply.kind==='life')g.lives++; g.events.push('rescue'); message(g, 'Supplies recovered.'); }
+        if (g.winch >= g.winchDuration) { supply.used = true; g.winch = 0; if (supply.kind === 'fuel') p.fuel = 100; if (supply.kind === 'ammo') { p.ammo = 1178; p.rockets = 38; p.hellfires = 8; } if (supply.kind === 'repair') p.armor = 600; if(supply.kind==='winch')g.quickWinch=true; if(supply.kind==='life')g.lives++; if(supply.kind==='cash')g.flags.cash=true; g.events.push('rescue'); message(g, supply.kind==='cash'?'Cash case aboard. Find the official to buy the intelligence.':'Supplies recovered.'); }
       } else { g.winch = 0; if (person && p.crew >= 6) message(g, 'Cabin full. Deliver your crew at base first.', 1); }
     } else g.winch = 0;
     for(const e of g.enemies){

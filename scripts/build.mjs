@@ -7,6 +7,8 @@ await mkdir(out, { recursive: true });
 let html = await readFile(path.join(root, 'index.html'), 'utf8');
 const css = await readFile(path.join(root, 'src/style.css'), 'utf8');
 const readCredits = await readFile(path.join(root,'THIRD_PARTY.md'),'utf8');
+const dosData = await readFile(path.join(root,'src/dos-data.js'),'utf8');
+const dosReference = await readFile(path.join(root,'src/dos-reference.js'),'utf8');
 const reference = await readFile(path.join(root,'src/reference.js'),'utf8');
 const terrain = await readFile(path.join(root,'src/terrain-data.js'),'utf8');
 const campaigns = await readFile(path.join(root, 'src/campaigns.js'), 'utf8');
@@ -23,7 +25,7 @@ for(const file of await readdir(path.join(root,'assets/original'))){
 }
 html = html.replace('<link rel="stylesheet" href="src/style.css">', () => `<style>${css}</style>`);
 html = html.replace('</head>',()=>`<!-- ${readCredits} -->\n</head>`);
-html = html.replace('<script src="src/terrain-data.js"></script><script src="src/reference.js"></script><script src="src/campaigns.js"></script><script src="src/simulation.js"></script><script src="src/original-art.js"></script><script src="src/game.js"></script>', () => `<script>window.GULF_ASSETS=${JSON.stringify(assets)};</script><script>${terrain}</script><script>${reference}</script><script>${campaigns}</script><script>${sim}</script><script>${art}</script><script>${game}</script>`);
+html = html.replace('<script src="src/dos-data.js"></script><script src="src/dos-reference.js"></script><script src="src/terrain-data.js"></script><script src="src/reference.js"></script><script src="src/campaigns.js"></script><script src="src/simulation.js"></script><script src="src/original-art.js"></script><script src="src/game.js"></script>', () => `<script>window.GULF_ASSETS=${JSON.stringify(assets)};</script><script>${dosData}</script><script>${dosReference}</script><script>${terrain}</script><script>${reference}</script><script>${campaigns}</script><script>${sim}</script><script>${art}</script><script>${game}</script>`);
 await writeFile(path.join(out, 'index.html'), html);
 await writeFile(path.join(out, 'Desert-Strike.html'), html);
 await writeFile(path.join(out, '.nojekyll'), '');
