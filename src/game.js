@@ -67,6 +67,8 @@
   window.addEventListener('keydown', e => {
     if (e.target instanceof HTMLSelectElement&&!['m','escape'].includes(e.key.toLowerCase())) return;
     const key = e.key.toLowerCase();
+    // Space activates the focused button; it is a flight shortcut only elsewhere.
+    if (key === ' ' && e.target instanceof Element && e.target.closest('button')) return;
     if ([' ', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright'].includes(key)) e.preventDefault();
     if (!e.repeat) {
       if (key === ' ' || key === 'k') pulse.rocket = true;
@@ -88,6 +90,9 @@
   for (const b of document.querySelectorAll('[data-hold]')) {
     b.addEventListener('pointerdown', e => { e.preventDefault(); b.setPointerCapture(e.pointerId); held[b.dataset.hold] = true; mouse = null; });
     for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) b.addEventListener(event, () => held[b.dataset.hold] = false);
+    b.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); held[b.dataset.hold] = true; mouse = null; } });
+    b.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); held[b.dataset.hold] = false; } });
+    b.addEventListener('blur', () => held[b.dataset.hold] = false);
   }
   function input() { return { left: keys.a || keys.arrowleft || held.left, right: keys.d || keys.arrowright || held.right, up: keys.w || keys.arrowup || held.up, down: keys.s || keys.arrowdown || held.down, fire: firing || keys.j || held.fire, rocket: keys[' '] || keys.k || held.rocket || pulse.rocket, hellfire: keys.l || held.hellfire || pulse.hellfire, winch: keys.e || held.winch, strafe: keys.shift, ...((mouse && !keys.j && !held.fire) ? { aimX: mouse.x / zoom + camera.x, aimY: mouse.y / zoom + camera.y } : {}) }; }
   function sprite(index, x, y, width, height = width, angle = 0, alpha = 1) {
