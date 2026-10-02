@@ -9,6 +9,8 @@ Default: Standard difficulty / With Momentum controls.
 W/S forward/reverse, A/D turn; Shift + A/D strafe without turning.
 Optional From Above: WASD or arrows move in compass directions.
 Weapons: J chain gun, K or Space Hydra, L Hellfire.
+Space activates a focused menu button. Hold Space or Enter on a focused
+direction or weapon button to use that control; release the key to stop.
 Hover over people and supplies to pick them up automatically.
 Deliver passengers at a landing zone (L) or the frigate (H) to repair armor.
 M opens the map and pauses. P or Escape pauses/resumes.

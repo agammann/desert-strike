@@ -6,7 +6,7 @@ A standalone recreation by **agammann**, with a custom JavaScript engine, origin
 
 No ROM, emulator, account, installation, or runtime download is needed. The offline release is one self-contained HTML game that opens in a modern browser.
 
-**Fidelity status:** v0.6.0 is a playable five-campaign recreation, with more objective positions, armor values, supply locations and building artwork taken from the supplied DOS data. It is **not a verified one-to-one port**: movement, enemy scripts, scoring and some map details still differ or remain unmeasured. See the [DOS comparison](docs/DOS-COMPARISON.md) and [fidelity ledger](docs/FIDELITY.md).
+**Fidelity status:** v0.6.1 is a playable five-campaign recreation, with objective positions, armor values, supply locations and building artwork taken from the supplied DOS data. It is **not a verified one-to-one port**: movement, enemy scripts, scoring and some map details still differ or remain unmeasured. See the [DOS comparison](docs/DOS-COMPARISON.md) and [fidelity ledger](docs/FIDELITY.md).
 
 ![Desert Strike recreation: pixel-art helicopter approaching radar defenses, a landing zone, tactical map and aircraft instruments](docs/gameplay.png)
 
@@ -29,7 +29,7 @@ The game starts in **Standard / With Momentum**: finite supplies, documented ene
 | **A / Left**, **D / Right** | Turn in classic modes; west / east in From Above |
 | **Shift + A / D** | Strafe without turning in classic modes |
 | **J** or **left click** | Chain gun |
-| **K** or **Space** | Hydra rockets |
+| **K** or **Space** | Hydra rockets while the battlefield has keyboard focus |
 | **L** | Hellfire missile; copilot can track a target ahead of the aircraft |
 | **Hover over a person or crate** | Automatic rescue or supply pickup |
 | **E** | Slow movement for precise pickup positioning |
@@ -38,6 +38,8 @@ The game starts in **Standard / With Momentum**: finite supplies, documented ene
 | **Enter** | Start / resume when the briefing is open |
 
 On narrow screens, use the direction pad and **Gun / Hydra / Hellfire** buttons. A keyboard is recommended for classic flight controls. Switching tabs or windows pauses the game automatically. Sound starts muted; use **Sound off** to enable it. The title and selected campaign briefing play music; flight uses rotor and weapon sounds, with separate success, failure and ending tracks.
+
+Use **Tab** to focus a menu button, then **Space** or **Enter** to activate it. When a direction or weapon button has focus, hold **Space** or **Enter** to use that control; release the key to stop.
 
 ## Complete a campaign
 
