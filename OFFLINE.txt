@@ -1,5 +1,5 @@
 DESERT STRIKE: RETURN TO THE GULF
-Standalone fan recreation by agammann
+v1.0.0 standalone fan recreation by agammann
 
 Extract this entire ZIP, then open Desert-Strike.html in a modern browser.
 On Windows you can also double-click Play.cmd.
@@ -42,3 +42,12 @@ No mid-campaign save: use pause or restart the campaign from its briefing.
 This is a newly implemented recreation, not an exact port of the original.
 Full instructions and buildable source:
 https://github.com/agammann/desert-strike
+
+Before changing browsers, clearing data or moving to another release:
+choose Export progress at the briefing/results and keep the JSON backup.
+Open the new HTML and choose Import progress. Invalid backups preserve progress.
+If storage is unavailable, this session needs a backup before closing.
+The six-file package includes RELEASE.json with its source commit and HTML hash.
+Compare this ZIP with SHA256SUMS from the release page before extracting.
+Acceptance browsers: Chrome 155 and Edge 154 on Windows. Other modern browsers
+are best effort; physical phone controls and audible speakers are not certified.

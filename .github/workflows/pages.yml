@@ -1,4 +1,4 @@
-name: Build, test and publish game
+name: Verify, release and publish game
 on:
   push:
     branches: [main]
@@ -7,34 +7,63 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: pages-${{ github.ref }}
+  group: desert-strike-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: '22'
-      - run: node --test tests/campaigns.test.cjs
-      - run: node scripts/build.mjs
-      - uses: actions/upload-artifact@v4
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          name: Desert-Strike-offline
-          path: |
-            dist/Desert-Strike.html
-            Play.cmd
-            OFFLINE.txt
-            LICENSE
-            THIRD_PARTY.md
-      - uses: actions/upload-pages-artifact@v3
-        if: github.event_name != 'pull_request'
+          node-version: '24.19.0'
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.14'
+      - run: node --test tests/campaigns.test.cjs tests/progress.test.cjs
+      - run: python scripts/package-release.py
+      - run: python scripts/check-consumer.py --out ../desert-strike-consumer
+      - if: runner.os == 'Linux'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: desert-strike-release
+          path: release-artifacts/
+          if-no-files-found: error
+      - if: runner.os == 'Linux' && github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
           path: dist
+  publish:
+    needs: verify
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: desert-strike-release
+          path: release-artifacts
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const { default: publish } = await import(process.env.GITHUB_WORKSPACE + '/scripts/release.mjs');
+            await publish({ github, context, core });
   deploy:
+    needs: verify
     if: github.event_name != 'pull_request'
-    needs: build
     permissions:
       pages: write
       id-token: write
@@ -43,5 +72,5 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/deploy-pages@v5
+      - uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5
         id: deployment

@@ -14,18 +14,19 @@ const terrain = await readFile(path.join(root,'src/terrain-data.js'),'utf8');
 const campaigns = await readFile(path.join(root, 'src/campaigns.js'), 'utf8');
 const sim = await readFile(path.join(root, 'src/simulation.js'), 'utf8');
 const game = await readFile(path.join(root, 'src/game.js'), 'utf8');
+const progress = await readFile(path.join(root, 'src/progress.js'), 'utf8');
 const art = await readFile(path.join(root, 'src/original-art.js'), 'utf8');
 const sprites = (await readFile(path.join(root, 'assets/sprites.png'))).toString('base64');
 const assets={sprites:`data:image/png;base64,${sprites}`};
-for(const file of await readdir(path.join(root,'assets/original/tiles')))assets['tile'+path.parse(file).name]=`data:image/png;base64,${(await readFile(path.join(root,'assets/original/tiles',file))).toString('base64')}`;
-for(const file of await readdir(path.join(root,'assets/original'))){
+for(const file of (await readdir(path.join(root,'assets/original/tiles'))).sort())assets['tile'+path.parse(file).name]=`data:image/png;base64,${(await readFile(path.join(root,'assets/original/tiles',file))).toString('base64')}`;
+for(const file of (await readdir(path.join(root,'assets/original'))).sort()){
   if(!/\.(png|mp3)$/.test(file))continue;
   const mime=file.endsWith('.png')?'image/png':'audio/mpeg';
   assets[path.parse(file).name]=`data:${mime};base64,${(await readFile(path.join(root,'assets/original',file))).toString('base64')}`;
 }
 html = html.replace('<link rel="stylesheet" href="src/style.css">', () => `<style>${css}</style>`);
 html = html.replace('</head>',()=>`<!-- ${readCredits} -->\n</head>`);
-html = html.replace('<script src="src/dos-data.js"></script><script src="src/dos-reference.js"></script><script src="src/terrain-data.js"></script><script src="src/reference.js"></script><script src="src/campaigns.js"></script><script src="src/simulation.js"></script><script src="src/original-art.js"></script><script src="src/game.js"></script>', () => `<script>window.GULF_ASSETS=${JSON.stringify(assets)};</script><script>${dosData}</script><script>${dosReference}</script><script>${terrain}</script><script>${reference}</script><script>${campaigns}</script><script>${sim}</script><script>${art}</script><script>${game}</script>`);
+html = html.replace('<script src="src/dos-data.js"></script><script src="src/dos-reference.js"></script><script src="src/terrain-data.js"></script><script src="src/reference.js"></script><script src="src/campaigns.js"></script><script src="src/simulation.js"></script><script src="src/original-art.js"></script><script src="src/progress.js"></script><script src="src/game.js"></script>', () => `<script>window.GULF_ASSETS=${JSON.stringify(assets)};</script><script>${dosData}</script><script>${dosReference}</script><script>${terrain}</script><script>${reference}</script><script>${campaigns}</script><script>${sim}</script><script>${art}</script><script>${progress}</script><script>${game}</script>`);
 await writeFile(path.join(out, 'index.html'), html);
 await writeFile(path.join(out, 'Desert-Strike.html'), html);
 await writeFile(path.join(out, '.nojekyll'), '');

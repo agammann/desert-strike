@@ -1,4 +1,25 @@
-# Verification — v0.6.1
+# Verification — v1.0.0
+
+## October 7, 2026 v1 checks
+
+Windows browser checks use Node.js **24.19.0**, Chrome for Testing **155.0.8059.12** and Microsoft Edge **154.0.4258.62**. The existing **63** simulation checks and **seven** progress tests pass. The game rules, campaign definitions, original maps/artwork/music, test pilot, license and third-party credits remain byte-identical to v0.6.1.
+
+The ten complete input-driven simulation playthroughs cover all five campaigns in Standard and Relaxed. The pilot reads state and emits ordinary player inputs; it does not assign health, ammunition, objective completion or victories. Focused rule tests retain their explicit fixtures.
+
+A separate continuous **Air Superiority** browser route completed all five objectives through the normal requestAnimationFrame/fixed-step loop: three personnel delivered, 13,950 points, and a saved next-operation checkpoint of 13,000. Export and the Next operation button passed. Browser virtual time accelerates the real loop; the private observer reads state and chooses programmatic DOM keyboard/pointer events for the following frame, without assigning game state, handler input or elapsed time. An initial private driver run did not finish and is retained separately; the pointer-state correction changed the driver only.
+
+Both acceptance browsers opened the built self-contained HTML directly from disk **with networking disabled**. Nineteen grouped interface/recovery checks passed: all five briefing/checklist selections, Space launch/pause, movement, three weapons, map pause/filter, sound toggle state, focused and pointer held controls/releases, controlled focus-loss pause, restart, actual imported/downloaded progress, reload/Continue, malformed/oversized/schema/score failure preservation, corrupt stored bytes, and unavailable-storage session export. There were no uncaught page errors or remote requests. **1440, 390 and 320** layouts had no horizontal overflow; briefing/flight screenshots were inspected.
+
+Five separate ending/checkpoint/next-operation/final-completion browser paths use **explicit terminal fixtures produced by the unchanged input-only simulation pilot**. The real browser frame/DOM code displays the resulting game, saves rounded checkpoint scores, exports progress and restores the next operation after reload. The fifth ending removes the checkpoint and returns to the briefing. A loss fixture produced by ordinary constant flight input passes Retry with fresh resources. These fixtures test interface/save transitions; they are not five complete rendered browser playthroughs.
+
+Progress tests cover one-record saves, legacy checkpoint/Jake/best migration, new-record precedence, corrupt/read-blocked data preservation, invalid import rejection, write failures and final-campaign empty checkpoints. Backups contain only next-campaign progress, best score and unlock; there is no mid-mission save, network upload or cloud account.
+
+The versioned offline/source packaging and fresh-consumer commands in BUILD.md compare exact committed source bytes, all six offline members and build receipt, ZIP integrity/commit comments, checksums, tests and a rebuilt byte-identical HTML. Release CI runs those consumer gates on Linux and Windows before publishing. The current release checks and public deployment identities are recorded separately from the historical reviews below.
+
+Browser control tools are unavailable, so the browser checks use isolated Playwright sessions. Programmatic keyboard/pointer checks do not certify physical phones, every controller/copilot matrix or audible speakers. Audio toggle/API state is checked; human listening is not claimed. The original-game fidelity limits still apply.
+
+## Historical v0.6.1 review
+
 
 ## October 2, 2026 review
 
