@@ -1,65 +1,61 @@
-# Build Desert Strike
+# Build Desert Strike v1
 
-Requires **Node.js 20 or newer** to build and test. Playing a release only requires a browser. There are no npm packages to install and no emulator, ROM, external game engine, remote font, or CDN script.
+Requires **Node.js 24 or newer**. The v1 acceptance runtime is Node.js 24.19.0. No npm packages, emulator, ROM or external engine are required. Python 3.10 or newer and Git are needed only for packaging/consumer verification.
+
+Download the versioned source ZIP from the [v1.0.0 release](https://github.com/agammann/desert-strike/releases/tag/v1.0.0), compare SHA256SUMS, extract it and open a terminal in `desert-strike-1.0.0`.
+
+```sh
+node --test tests/campaigns.test.cjs tests/progress.test.cjs
+node scripts/build.mjs
+```
+
+Open `dist/Desert-Strike.html`. `dist/index.html` has the same bytes for static hosting. The builder embeds all active sprite sheets, terrain tiles, eight MP3 tracks, metadata, CSS and scripts; it sorts input filenames so fresh builds match across supported build platforms.
+
+For development, run `node scripts/serve.mjs` and open `http://127.0.0.1:4173`. This server binds to loopback; stop it with Ctrl+C. Set PORT to choose another port. The unbuilt source needs this local server for artwork canvas access. A release HTML needs none.
+
+## Engine map
+
+| File | Responsibility |
+| :--- | :--- |
+| `src/terrain-data.js`, `src/original-art.js` | Terrain grids, palette and original sprite selection |
+| `src/dos-data.js`, `src/dos-reference.js`, `src/reference.js` | DOS anchors, metadata, weapons and reconstructed rules |
+| `src/campaigns.js` | Five campaigns, objectives, intelligence, escorts, timers and endings |
+| `src/simulation.js` | Fixed-step flight, combat, winch, supplies, damage and lives |
+| `src/game.js`, `src/style.css`, `index.html` | Rendering, DOM controls, audio and pause/menu states |
+| `src/progress.js` | Strict progress backup schema, legacy migration and storage boundary |
+| `assets/original/`, `THIRD_PARTY.md` | Original artwork/music and their separate rights |
+| `tests/campaigns.test.cjs`, `tests/pilot.cjs` | Rule regressions and input-driven campaign completions |
+| `tests/progress.test.cjs` | Backup validation, corruption/blocked-write preservation and migration |
+| `scripts/build.mjs` | Self-contained offline/static HTML |
+
+Keep simulation and browser behavior aligned. The test pilot reads state and emits player inputs; focused rule fixtures explicitly set up their branch. Neither pilot nor browser observer ships in a built game. When changing maps, assets or rules, update the campaign/fidelity documentation and directly verify the affected browser journey.
+
+## Package a release
+
+Use a clean committed Git checkout; packaging from a source ZIP without Git metadata is intentionally rejected.
 
 ```sh
 git clone https://github.com/agammann/desert-strike.git
 cd desert-strike
-node --test tests/campaigns.test.cjs
-node scripts/build.mjs
+git checkout v1.0.0
+python scripts/package-release.py
+python scripts/check-consumer.py --out ../desert-strike-consumer
 ```
 
-Open `dist/Desert-Strike.html`. The builder embeds the sprite sheets, terrain tiles, eight MP3 tracks, map data, CSS, and JavaScript into a single file. `dist/index.html` is the equivalent GitHub Pages entry point. Use the local server below to run the unbuilt source; its terrain palette conversion reads local images through canvas. The built HTML embeds those images and needs no server.
+Packaging builds the game, writes exact committed source and six-file offline ZIPs under `release-artifacts/`, and adds two individual checksums plus SHA256SUMS. RELEASE.json inside the offline ZIP records version, commit, tree and HTML hash. The consumer check safely extracts into a new folder, compares every source blob with the commit, runs the tests, builds again and requires exact offline HTML/documentation bytes.
 
-## Development
+## CI and hosting
 
-```sh
-node scripts/serve.mjs
-```
+`.github/workflows/pages.yml` tests and verifies fresh package consumers on Linux and Windows. A main push publishes v1 only after both jobs pass. Its publisher checks main/tag identity and every uploaded asset's SHA-256 and size before making a draft public; published releases are left unchanged. The same built HTML deploys to the existing GitHub Pages site. Pull requests do not publish or deploy.
 
-Open `http://127.0.0.1:4173`. The server binds only to loopback. Press Ctrl+C to stop it. Set `PORT` to choose a different port.
-
-| File | Responsibility |
-| :--- | :--- |
-| `src/terrain-data.js` | Matched 512-pixel terrain grid, campaign palettes and sampled coast boundaries |
-| `src/original-art.js` | Original sprite frame selection and terrain composition |
-| `assets/original/` | Original sprite sheets, tiles and music; see THIRD_PARTY.md |
-| `src/dos-data.js` | Decoded numeric DOS object metadata and artwork rectangles |
-| `src/dos-reference.js` | Applies confirmed DOS anchors/artwork and documented reconstruction rules |
-| `src/reference.js` | Copilot profiles, weapon table, map geometry, landmark placements, defenses and supply distribution |
-| `src/campaigns.js` | Mission definitions, intelligence, scripted events, escorts, timers and campaign success/failure |
-| `src/simulation.js` | Flight physics, combat, winch, supplies, damage and lives |
-| `src/game.js` | Canvas rendering, input, music playback, synthesized effects, HUD, map, pause and menus |
-| `src/style.css` | Desktop/mobile game interface |
-| `assets/terrain.png` | Legacy v0.1/v0.2 terrain artwork; no longer loaded or included in builds |
-| `assets/sprites.png` | Supplementary recreated supply and landing-zone atlas |
-| `scripts/build.mjs` | Creates the standalone offline and Pages HTML |
-| `tests/campaigns.test.cjs` | Mission transitions, failure cases, resources and ten complete playthroughs |
-| `tests/pilot.cjs` | A read-only test pilot that emits ordinary player inputs |
-
-## GitHub builds
-
-`.github/workflows/pages.yml` runs tests and builds on pushes to `main` and pull requests. Each build uploads the self-contained HTML as the **Desert-Strike-offline** workflow artifact. Pushes to `main` also deploy `dist/` to GitHub Pages. Pull requests do not deploy.
-
-For a fork, enable Pages in **Settings → Pages → Source: GitHub Actions** and enable workflows. Update the repository and player links in the README for your account. No deployment secret or API key is needed.
-
-## Package a release
-
-After building, put these files in a ZIP:
-
-- `dist/Desert-Strike.html`
-- `Play.cmd`
-- `OFFLINE.txt`
-- `LICENSE`
-- `THIRD_PARTY.md`
-
-Name it `Desert-Strike-offline.zip`. The GitHub Releases source archives contain the buildable source; the offline ZIP is the ready-to-play download. `Play.cmd` opens the adjacent HTML in the default browser and does not download anything.
+A fork can enable Pages in **Settings → Pages → Source: GitHub Actions**. Update the repo/player links and publisher repository guard before publishing under a new identity. Existing Sites hosting is separately deployed from this source; GitHub Actions does not deploy it.
 
 ## Troubleshooting
 
-- **Artwork fails in the source version:** extract the whole source archive so `assets/` and `src/` remain alongside `index.html`, or use the single-file release.
-- **Browser shows text instead of a game:** use Open With and choose a modern browser for the `.html` file.
-- **Can't move after switching windows:** the game automatically paused. Choose Resume flight.
-- **Aircraft turns instead of moving sideways:** select From Above in the briefing if you prefer compass-direction movement.
-- **No sound:** select Sound off to enable sound. Browser sound begins after a user interaction.
-- **Command not found: node:** install Node.js to build from source, or use the prebuilt offline download to play without development tools.
+- Unbuilt artwork fails: extract all source files and use the loopback server, or open the built single-file HTML.
+- HTML opens as text: choose a browser with Open With.
+- Flight does not move after a tab/window switch: choose Resume flight; focus loss pauses automatically.
+- Aircraft turns instead of moving sideways: select From Above for compass movement.
+- No sound: select Sound off to enable it after user interaction. Browser audio APIs do not prove speakers are audible.
+- Progress is unavailable: export the current session before closing; import a valid backup or clear only this game's browser site data to start fresh.
+- Node is missing: the prebuilt offline ZIP does not require Node; install Node only to build/develop.

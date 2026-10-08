@@ -9,15 +9,53 @@
   let pulse = {};
   let g = createGame(), mode = 'briefing', ready = false, mapOpen = false, keys = {}, held = {}, mouse = null, firing = false;
   let w = 1000, h = 700, zoom = .8, camera = { x: 0, y: 0 }, last = performance.now(), sound = false, audio, rotor, rotorGain, hudTime = 0;
-  let best = 0; try { best = Number(localStorage.getItem('desert-strike-best')) || 0; } catch {}
+  const progressLoaded = DesertProgress.load({ getItem: key => localStorage.getItem(key) });
+  let progressWritable = progressLoaded.status === 'ready';
+  let best = progressLoaded.value.best;
   let music=null,musicName='',wantedMusic='title';
   function syncMusic(){
     if(!sound||!wantedMusic||document.hidden){music?.pause();return;}
     if(musicName!==wantedMusic){music?.pause();musicName=wantedMusic;music=new Audio(assets[musicName]||`assets/original/${musicName}.mp3`);music.volume=.35;music.loop=!['failed','ending'].includes(musicName);}
     if(music.paused)music.play().catch(()=>{});
   }
-  let jakeUnlocked=false,checkpoint=null,persistedJake=false;
-  try{jakeUnlocked=localStorage.getItem('desert-strike-jake')==='true';const saved=JSON.parse(localStorage.getItem('desert-strike-checkpoint'));if(saved&&Number.isInteger(saved.level)&&saved.level>0&&saved.level<missions.length&&Number.isFinite(saved.score)&&saved.score>=0)checkpoint=saved;}catch{}
+  let jakeUnlocked=progressLoaded.value.jakeUnlocked,checkpoint=progressLoaded.value.checkpoint,persistedJake=false;
+  const progressValue = () => ({ schemaVersion: 1, checkpoint, best, jakeUnlocked });
+  function saveProgress() {
+    if (!progressWritable) {
+      $('progress-status').textContent = 'Progress is kept for this session. Export a backup before closing.';
+      return;
+    }
+    try {
+      DesertProgress.save(localStorage, progressValue());
+      $('progress-status').textContent = 'Progress saved in this browser. Export a backup before changing browsers or offline files.';
+    } catch {
+      progressWritable=false;
+      $('progress-status').textContent = 'Browser storage is unavailable. Progress is kept for this session; export a backup before closing.';
+    }
+  }
+  $('progress-status').textContent=progressLoaded.message || 'Completed operations and Jake unlock are remembered here. Unfinished missions are not saved.';
+  $('export-progress').onclick=()=>{
+    const blob=new Blob([JSON.stringify(DesertProgress.validate(progressValue()),null,2)+'\n'],{type:'application/json'});
+    const url=URL.createObjectURL(blob),link=document.createElement('a');
+    link.href=url;link.download='Desert-Strike-progress.json';link.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    $('progress-status').textContent='Backup exported. Keep it to restore progress in another browser or release.';
+  };
+  $('import-progress').onclick=()=>$('progress-file').click();
+  $('progress-file').onchange=async event=>{
+    const file=event.target.files[0];event.target.value='';
+    if(!file)return;
+    try {
+      if(file.size>DesertProgress.MAX_BYTES)throw new Error('The progress backup is too large.');
+      const imported=DesertProgress.decode(await file.text());
+      best=imported.best;checkpoint=imported.checkpoint;jakeUnlocked=imported.jakeUnlocked;persistedJake=jakeUnlocked;
+      if(!jakeUnlocked&&$('copilot').value==='jake')$('copilot').value='xman';
+      g=createGame(Number($('mission').value),$('difficulty').value,$('controls').value,{copilotId:$('copilot').value,jakeUnlocked});
+      progressWritable=true;saveProgress();copilotUI();setMode('briefing');refreshHUD();
+    } catch(error) {
+      $('progress-status').textContent='Backup not imported: '+error.message+' Current progress was kept.';
+    }
+  };
   persistedJake=jakeUnlocked;
   function copilotUI(){const j=$('copilot').querySelector('option[value="jake"]');j.disabled=!jakeUnlocked;j.textContent=jakeUnlocked?'Jake — expert gunner and winch':'Jake — missing in action';const c=DesertReference.copilots[$('copilot').value];$('copilot-hint').textContent=`${c.name}: ${c.hint}`;}
   copilotUI();$('copilot').onchange=copilotUI;
@@ -50,9 +88,10 @@
       if(next==='won')$('overlay-copy').textContent+=` Targets ${g.scoreLog.targets} · rescues ${g.scoreLog.rescues+g.scoreLog.delivery} · bonus ${g.scoreLog.bonus} · penalties ${g.scoreLog.penalties}.`;
       $('launch').textContent = next === 'won' ? (g.level < missions.length-1 ? 'Next operation' : 'Back to briefing') : 'Retry operation';
       $('retry').textContent = 'Back to briefing';
-      if (next === 'won') { best = Math.max(best, g.score);checkpoint=g.level<missions.length-1?{level:g.level+1,score:Math.floor(g.score/1000)*1000}:null;try { localStorage.setItem('desert-strike-best', String(best));if(checkpoint)localStorage.setItem('desert-strike-checkpoint',JSON.stringify(checkpoint));else localStorage.removeItem('desert-strike-checkpoint'); } catch {} }
+      if (next === 'won') { best = Math.max(best, g.score);checkpoint=g.level<missions.length-1?{level:g.level+1,score:Math.floor(g.score/1000)*1000}:null;saveProgress(); }
     }
     if (next === 'briefing') { $('overlay-kicker').textContent = 'FLIGHT BRIEFING'; $('overlay-title').innerHTML = 'Bring everyone<br>home.'; $('overlay-copy').textContent = 'Follow the mission briefing. Capture intelligence, protect rescues, manage supplies, and return to the frigate.'; $('launch').textContent = ready ? 'Launch operation' : 'Loading flight deck…'; }
+    $('progress-controls').hidden = !['briefing','won','lost'].includes(next);
     if (next === 'playing') canvas.focus({ preventScroll: true });
   }
   function start(level = Number($('mission').value),score=0) { g = createGame(level, $('difficulty').value, $('controls').value,{copilotId:$('copilot').value,jakeUnlocked,score}); $('mission').value = String(level); mapOpen = false; $('big-map').hidden = true; mouse = null; setMode('playing'); refreshHUD(); }
@@ -246,7 +285,7 @@
     $('cabin').value=p.crew;$('cabin-value').textContent=`${p.crew}/6`;$('ammo-value').textContent=p.ammo;
     $('lives').textContent=`LIVES ${g.lives}`; $('score').textContent=String(g.score).padStart(6,'0');$('clock').textContent=`${String(Math.floor(g.time/60)).padStart(2,'0')}:${String(Math.floor(g.time%60)).padStart(2,'0')}`;
     $('radio').textContent=mode==='playing' && g.messageTime>0 ? g.message : '';
-    if(g.jakeUnlocked&&!persistedJake){jakeUnlocked=true;persistedJake=true;copilotUI();try{localStorage.setItem('desert-strike-jake','true');}catch{}}
+    if(g.jakeUnlocked&&!persistedJake){jakeUnlocked=true;persistedJake=true;copilotUI();saveProgress();}
     drawMap(mini); if(mapOpen) drawMap(large);
   }
   function frame(now) {

@@ -2,19 +2,19 @@
 
 A standalone recreation by **agammann**, with a custom JavaScript engine, original DOS artwork and Mega Drive music. Play **35 objectives across all five campaigns in the supplied DOS CD edition**, including Supergun: intelligence captures, missile interceptions, rescues, the embassy bus escort, the nuclear bomber, and the capture of General Carranza.
 
-**[Play now on Sites](https://desert-strike.alx21.chatgpt.site/)** · **[GitHub Pages](https://agammann.github.io/desert-strike/)** · **[Download the offline game](https://github.com/agammann/desert-strike/releases/latest/download/Desert-Strike-offline.zip)** · **[Get the source](https://github.com/agammann/desert-strike/archive/refs/heads/main.zip)**
+**[Play now on Sites](https://desert-strike.alx21.chatgpt.site/)** · **[GitHub Pages](https://agammann.github.io/desert-strike/)** · **[Download the offline game](https://github.com/agammann/desert-strike/releases/download/v1.0.0/desert-strike_1.0.0_offline.zip)** · **[Get the source](https://github.com/agammann/desert-strike/releases/download/v1.0.0/desert-strike_1.0.0_source.zip)**
 
 No ROM, emulator, account, installation, or runtime download is needed. The offline release is one self-contained HTML game that opens in a modern browser.
 
-**Fidelity status:** v0.6.1 is a playable five-campaign recreation, with objective positions, armor values, supply locations and building artwork taken from the supplied DOS data. It is **not a verified one-to-one port**: movement, enemy scripts, scoring and some map details still differ or remain unmeasured. See the [DOS comparison](docs/DOS-COMPARISON.md) and [fidelity ledger](docs/FIDELITY.md).
+**v1.0.0:** the released game includes portable progress backup and restore, matching offline/source packages and checksums. **Fidelity status:** this is a playable five-campaign recreation, with objective positions, armor values, supply locations and building artwork taken from the supplied DOS data. It is **not a verified one-to-one port**: movement, enemy scripts, scoring and some map details still differ or remain unmeasured. See the [DOS comparison](docs/DOS-COMPARISON.md) and [fidelity ledger](docs/FIDELITY.md).
 
 ![Desert Strike recreation: pixel-art helicopter approaching radar defenses, a landing zone, tactical map and aircraft instruments](docs/gameplay.png)
 
 ## Play offline
 
-1. Download **Desert-Strike-offline.zip** above.
+1. Download **desert-strike_1.0.0_offline.zip** above. Optionally compare its SHA-256 with **SHA256SUMS** on the [release page](https://github.com/agammann/desert-strike/releases/tag/v1.0.0).
 2. Extract the ZIP. On Windows, right-click it and choose **Extract All**.
-3. Open **Desert-Strike.html** in Chrome, Edge, or Firefox. Windows users can also double-click **Play.cmd**.
+3. Open **Desert-Strike.html** in Chrome or Edge. The v1 acceptance runs use Chrome 155 and Edge 154 on Windows; other modern browsers are best effort. Windows users can also double-click **Play.cmd**.
 4. Choose a campaign, copilot and control mode, then select **Launch operation**.
 
 You can disconnect from the internet before opening the extracted game. Artwork, music, sound effects, missions, and code are all included. There is no local server to install or run.
@@ -67,6 +67,22 @@ Follow the **current mission** and numbered checklist beside the battlefield. Th
 | Supergun | 8 | Spy chain, airport, parts convoy, bribe, factories and guns, palace decoy, capture alive |
 
 Read **[the campaign guide](docs/CAMPAIGNS.md)** for every objective, rescue threshold, timer and failure condition.
+
+## Keep progress and update
+
+The game remembers the **next operation and score after a completed campaign**, the best score, and Jake's unlock. It does not save an unfinished mission. Saving is local to this browser and address; private browsing, cleared data, browser restrictions or moving an offline HTML file can remove or separate that storage.
+
+- At the briefing or result screen, choose **Export progress** and keep `Desert-Strike-progress.json`.
+- To move to another browser or a new release, extract its whole offline ZIP into a new folder, open its HTML, then choose **Import progress** and select that backup.
+- A restored checkpoint shows **Continue operation**; selecting another operation and **Launch operation** starts it from the beginning.
+- Invalid or oversized backups keep your current progress. If browser storage cannot be read or written, the status explains that this session needs an exported backup before closing. Corrupt stored bytes are left untouched until you explicitly import a valid backup or clear the game's browser data.
+- Keep the previous release and backup until the new one works. A v1 backup can be restored in another v1 release; v0.6.1 cannot import it. Existing v0.6.1 browser checkpoint/unlock keys are read when no v1 record exists.
+
+There is no account, cloud save or data upload. To start fresh, clear this game's site data in browser settings, or choose any campaign without **Continue operation**. Browser site data is separate from the ZIP: keep your exported backup outside its folder.
+
+## Support and development
+
+For a problem, [open an issue](https://github.com/agammann/desert-strike/issues) with the release, browser/Windows version, controls and difficulty, campaign/objective, expected result and what happened. Include a screenshot or a disposable progress backup when useful. Avoid personal information. Game rules and controls are in [the campaign guide](docs/CAMPAIGNS.md); building and changing the engine are in [BUILD.md](BUILD.md).
 
 ## How close is it to the original?
 
